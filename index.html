@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>颠倒世界：重启序章</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   颠倒世界：重启序章 —— 全局样式
+   配色：常态 青蓝#87CEEB / 樱粉#FFB7C5 / 暖金#FFD700
+        崩坏态 深蓝#0a1628 / 荧光青#00f0ff / 暗紫#4a0080
+   ============================================================ */
+:root{
+  --c-sky:#87CEEB;
+  --c-sakura:#FFB7C5;
+  --c-gold:#FFD700;
+  --c-deep:#0a1628;
+  --c-cyan:#00f0ff;
+  --c-purple:#4a0080;
+  --c-text:#eaf2ff;
+  --glass:rgba(12,22,40,0.55);
+  --glass-light:rgba(255,255,255,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  font-family:'Noto Sans SC',sans-serif;
+  background:#05070f;color:var(--c-text);
+  user-select:none;-webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.3);}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--c-cyan),var(--c-purple));border-radius:3px;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+canvas{display:block;}
+
+/* ========== 共用毛玻璃 ========== */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid var(--glass-light);
+}
+
+/* ========== 樱花花瓣画布（标题/游戏各一） ========== */
+#title-particle-canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;
+}
+#game-particle-canvas{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:12;pointer-events:none;
+}
+
+/* ============================================================
+   开始界面
+   ============================================================ */
+#title-screen{
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background-image:url('assets/bg_title.jpg');
+  background-size:cover;background-position:center;
+  transition:opacity 1.2s ease,filter 1.2s ease;
+}
+#title-screen::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(5,7,15,0.15) 0%,rgba(5,7,15,0.35) 60%,rgba(5,7,15,0.75) 100%);
+}
+#title-screen.hidden{opacity:0;pointer-events:none;filter:blur(8px);}
+.title-glow{
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+  width:780px;height:780px;pointer-events:none;
+  background:radial-gradient(ellipse,rgba(255,215,0,0.28) 0%,rgba(255,183,197,0.18) 40%,transparent 72%);
+  animation:pulseGlow 5s ease-in-out infinite;
+}
+@keyframes pulseGlow{0%,100%{opacity:0.55;transform:translate(-50%,-50%) scale(1);}50%{opacity:0.9;transform:translate(-50%,-50%) scale(1.08);}}
+.title-content{position:relative;z-index:2;text-align:center;animation:titleFadeIn 2.2s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes titleFadeIn{
+  0%{opacity:0;filter:blur(16px);transform:translateY(24px);}
+  60%{opacity:1;filter:blur(2px);}
+  100%{opacity:1;filter:blur(0);transform:translateY(0);}
+}
+.game-title{
+  font-size:clamp(56px,9vw,128px);font-weight:900;letter-spacing:0.12em;
+  color:#fff;line-height:1;
+  text-shadow:0 0 18px rgba(135,206,235,0.8),0 0 40px rgba(255,183,197,0.6),0 6px 30px rgba(0,0,0,0.7);
+  animation:titleGlow 3.5s ease-in-out infinite alternate;
+}
+@keyframes titleGlow{
+  from{text-shadow:0 0 14px rgba(135,206,235,0.7),0 0 34px rgba(255,183,197,0.5),0 6px 30px rgba(0,0,0,0.7);}
+  to{text-shadow:0 0 26px rgba(0,240,255,0.9),0 0 60px rgba(74,0,128,0.7),0 6px 30px rgba(0,0,0,0.7);}
+}
+.title-sub-zh{
+  font-size:clamp(24px,3.4vw,44px);font-weight:300;letter-spacing:0.6em;margin-top:14px;
+  color:var(--c-gold);text-shadow:0 0 16px rgba(255,215,0,0.7),0 4px 16px rgba(0,0,0,0.6);
+  padding-left:0.6em;
+}
+.title-sub-en{
+  font-family:'Cinzel',serif;font-size:clamp(12px,1.4vw,18px);letter-spacing:0.45em;
+  color:var(--c-sky);margin-top:18px;opacity:0.85;
+  text-shadow:0 0 12px rgba(135,206,235,0.6);
+}
+.title-divider{
+  width:240px;height:1px;margin:30px auto 26px;
+  background:linear-gradient(90deg,transparent,var(--c-sakura),var(--c-cyan),transparent);
+}
+.title-buttons{
+  display:flex;flex-direction:column;gap:16px;align-items:center;margin-top:8px;
+}
+.tbtn{
+  position:relative;width:280px;padding:15px 24px;font-size:17px;font-weight:500;letter-spacing:0.35em;
+  text-align:center;color:#eaf6ff;padding-left:calc(24px + 0.35em);
+  background:rgba(12,22,40,0.42);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.18);border-radius:40px;overflow:hidden;
+  transition:all .4s cubic-bezier(.2,.8,.2,1);
+}
+.tbtn::before{
+  content:"";position:absolute;inset:0;border-radius:40px;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(0,240,255,0.35),transparent 60%);
+  opacity:0;transition:opacity .4s ease;
+}
+.tbtn::after{
+  content:"";position:absolute;inset:0;border-radius:40px;
+  box-shadow:0 0 0 0 rgba(0,240,255,0.5);transition:box-shadow .5s ease;
+}
+.tbtn:hover{
+  transform:translateY(-3px);border-color:rgba(0,240,255,0.6);
+  background:rgba(0,40,70,0.5);letter-spacing:0.42em;
+}
+.tbtn:hover::before{opacity:1;}
+.tbtn:hover::after{box-shadow:0 0 24px 4px rgba(0,240,255,0.35),0 0 60px 8px rgba(135,206,235,0.18);}
+.tbtn span{position:relative;z-index:1;}
+.title-footer{
+  position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:2;
+  font-size:12px;letter-spacing:0.2em;color:rgba(234,242,255,0.55);
+}
+.title-footer b{color:var(--c-cyan);font-weight:400;}
+
+/* ============================================================
+   主游戏界面
+   ============================================================ */
+#game-screen{position:fixed;inset:0;z-index:10;opacity:0;pointer-events:none;transition:opacity .8s ease;}
+#game-screen.active{opacity:1;pointer-events:auto;}
+
+/* 顶部导航栏 */
+#top-nav{
+  position:fixed;top:0;left:0;right:0;height:60px;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+  background:linear-gradient(180deg,rgba(8,14,28,0.82),rgba(8,14,28,0.45));
+  backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.10);
+}
+.nav-logo{font-size:18px;font-weight:700;letter-spacing:0.25em;color:#fff;}
+.nav-logo .dot{color:var(--c-cyan);}
+.scene-tabs{display:flex;gap:6px;}
+.scene-tab{
+  padding:8px 20px;font-size:14px;letter-spacing:0.18em;color:rgba(234,242,255,0.6);
+  border-radius:20px;border:1px solid transparent;transition:all .35s ease;
+}
+.scene-tab:hover{color:#fff;background:rgba(255,255,255,0.06);}
+.scene-tab.active{
+  color:var(--c-cyan);background:rgba(0,240,255,0.10);
+  border-color:rgba(0,240,255,0.4);box-shadow:0 0 14px rgba(0,240,255,0.25);
+}
+.scene-tab.locked{opacity:0.4;cursor:not-allowed;}
+.nav-buttons{display:flex;gap:8px;}
+.nav-btn{
+  position:relative;width:38px;height:38px;border-radius:10px;font-size:13px;letter-spacing:0.1em;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+  transition:all .3s ease;
+}
+.nav-btn:hover{background:rgba(0,240,255,0.12);border-color:rgba(0,240,255,0.4);color:var(--c-cyan);transform:translateY(-2px);}
+.nav-btn .badge{
+  position:absolute;transform:translate(12px,-12px);min-width:18px;height:18px;padding:0 4px;
+  background:var(--c-sakura);color:#3a0a1a;font-size:11px;font-weight:700;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* 虚实切换按钮 */
+#reality-toggle{
+  position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:35;
+  width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(135,206,235,0.9),rgba(20,60,110,0.85));
+  border:2px solid rgba(135,206,235,0.7);
+  box-shadow:0 0 20px rgba(135,206,235,0.5),inset 0 0 14px rgba(255,255,255,0.25);
+  font-size:13px;font-weight:700;letter-spacing:0.1em;color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;
+  transition:all .5s ease;
+}
+#reality-toggle::before{
+  content:"";position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid rgba(135,206,235,0.5);animation:realityPulse 2.4s ease-out infinite;
+}
+@keyframes realityPulse{0%{transform:scale(1);opacity:0.7;}100%{transform:scale(1.5);opacity:0;}}
+#reality-toggle.corrupted{
+  background:radial-gradient(circle at 35% 30%,rgba(0,240,255,0.95),rgba(10,22,40,0.9));
+  border-color:var(--c-cyan);box-shadow:0 0 28px rgba(0,240,255,0.7),inset 0 0 14px rgba(255,255,255,0.3);
+}
+#reality-toggle.corrupted::before{border-color:var(--c-cyan);}
+#reality-toggle:hover{transform:translateY(-50%) scale(1.08);}
+#reality-toggle.disabled{opacity:0.4;cursor:not-allowed;filter:grayscale(0.6);}
+
+/* 场景容器 */
+#scene-container{position:fixed;inset:0;z-index:11;}
+.scene{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity .8s ease;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+}
+.scene.active{opacity:1;pointer-events:auto;}
+.scene.fade-out{opacity:0;}
+/* 常态遮罩（微暖） */
+.scene::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,7,15,0.08),rgba(5,7,15,0.32));
+  transition:background .6s ease;
+}
+.scene.corrupted::after{
+  background:linear-gradient(180deg,rgba(74,0,128,0.20),rgba(0,20,40,0.55));
+}
+.scene.corrupted{
+  filter:hue-rotate(8deg) contrast(1.12) saturate(0.85);
+}
+
+/* 热点（交互物品）层 —— 扩大点击区到120x120，圆点28px，光环80px，标签始终可见 */
+.hotspot-layer{position:absolute;inset:0;z-index:25;pointer-events:none;}
+.hotspot{
+  position:absolute;transform:translate(-50%,-50%);
+  width:120px;height:120px;cursor:pointer;pointer-events:auto;
+  display:flex;align-items:center;justify-content:center;
+}
+.hotspot-dot{
+  width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,215,0,0.98),rgba(255,183,197,0.55));
+  box-shadow:0 0 16px rgba(255,215,0,0.9),0 0 32px rgba(255,183,197,0.5),0 0 60px rgba(255,215,0,0.3);
+  animation:hotspotPulse 1.8s ease-in-out infinite;z-index:2;
+}
+.scene.corrupted .hotspot-dot{
+  background:radial-gradient(circle,rgba(0,240,255,0.98),rgba(74,0,128,0.6));
+  box-shadow:0 0 16px rgba(0,240,255,0.95),0 0 36px rgba(0,240,255,0.55),0 0 64px rgba(0,240,255,0.3);
+}
+/* 增强脉冲：scale 1→1.5，发光更明显 */
+@keyframes hotspotPulse{
+  0%,100%{transform:scale(1);opacity:0.92;}
+  50%{transform:scale(1.5);opacity:1;}
+}
+/* 怠速加速态：玩家30秒未交互时，脉冲提速提示 */
+.hotspot-layer.urgent .hotspot-dot{animation-duration:0.7s;}
+.hotspot-ring{
+  position:absolute;inset:0;margin:auto;width:80px;height:80px;border-radius:50%;
+  border:1.5px solid rgba(255,215,0,0.55);opacity:0.7;transition:all .35s ease;
+  animation:hotspotRingPulse 2.4s ease-in-out infinite;
+}
+.scene.corrupted .hotspot-ring{border-color:rgba(0,240,255,0.65);}
+@keyframes hotspotRingPulse{
+  0%,100%{transform:scale(0.9);opacity:0.45;}
+  50%{transform:scale(1.18);opacity:0.85;}
+}
+.hotspot-layer.urgent .hotspot-ring{animation-duration:0.9s;}
+.hotspot:hover .hotspot-ring{opacity:1;transform:scale(1.25);}
+.hotspot:hover .hotspot-dot{transform:scale(1.35);}
+.hotspot-label{
+  position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;font-size:13px;letter-spacing:0.14em;color:#fff;
+  background:rgba(8,14,28,0.72);padding:5px 14px;border-radius:14px;
+  border:1px solid rgba(255,255,255,0.22);
+  opacity:1;transition:all .3s ease;pointer-events:none;  /* 标签始终可见 */
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  text-shadow:0 1px 4px rgba(0,0,0,0.6);
+}
+.hotspot:hover .hotspot-label{bottom:-10px;background:rgba(0,40,70,0.85);border-color:rgba(0,240,255,0.5);}
+.hotspot.solved .hotspot-dot{background:radial-gradient(circle,rgba(120,255,170,0.9),rgba(60,200,120,0.4));box-shadow:0 0 16px rgba(120,255,170,0.8);}
+.hotspot.solved .hotspot-ring{border-color:rgba(120,255,170,0.5);opacity:0.5;animation:none;transform:scale(1);}
+.hotspot.solved .hotspot-label{opacity:0.55;}
+
+/* 灯笼（神社） */
+.lantern{
+  position:absolute;transform:translate(-50%,-50%);width:54px;height:78px;cursor:pointer;
+  display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;
+}
+.lantern-body{
+  width:46px;height:60px;border-radius:50%/40%;
+  background:linear-gradient(180deg,#7a1020,#4a0810);
+  border:2px solid #2a0508;transition:all .4s ease;position:relative;
+}
+.lantern.lit .lantern-body{
+  background:radial-gradient(circle at 50% 45%,#fff5d0,#ffb84a 55%,#ff7a2a);
+  box-shadow:0 0 26px rgba(255,184,74,0.85),0 0 60px rgba(255,140,60,0.5);
+  border-color:#ffce6a;
+}
+.lantern-cap{position:absolute;top:-8px;width:30px;height:10px;background:#2a0508;border-radius:4px;}
+.lantern-string{position:absolute;top:-22px;left:50%;width:2px;height:16px;background:rgba(255,255,255,0.3);}
+.lantern:hover .lantern-body{transform:translateY(-2px);}
+
+/* 雨画布 */
+#rain-canvas{position:fixed;inset:0;z-index:13;pointer-events:none;opacity:0;transition:opacity .8s ease;}
+#rain-canvas.active{opacity:1;}
+
+/* ============================================================
+   对话框系统
+   ============================================================ */
+#dialogue-box{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(120%);
+  width:min(960px,92vw);z-index:65;
+  display:flex;align-items:stretch;gap:0;
+  background:linear-gradient(180deg,rgba(8,14,28,0.5),rgba(5,8,16,0.92));
+  backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,0.15);
+  border-left:1px solid rgba(255,255,255,0.10);border-right:1px solid rgba(255,255,255,0.10);
+  border-radius:18px 18px 0 0;padding:18px 24px 22px;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 -10px 40px rgba(0,0,0,0.5);
+}
+#dialogue-box.show{transform:translateX(-50%) translateY(0);}
+.dialogue-avatar{
+  flex:0 0 auto;width:88px;height:88px;border-radius:50%;
+  background-size:cover;background-position:center top;
+  border:3px solid var(--c-cyan);align-self:center;
+  box-shadow:0 0 18px rgba(0,240,255,0.5);
+  animation:avatarFloat 3s ease-in-out infinite;
+}
+@keyframes avatarFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+.dialogue-content{flex:1;padding-left:20px;display:flex;flex-direction:column;justify-content:center;min-height:88px;}
+.dialogue-name{font-size:15px;font-weight:700;letter-spacing:0.2em;color:var(--c-cyan);margin-bottom:6px;text-shadow:0 0 10px rgba(0,240,255,0.4);}
+.dialogue-text{font-size:17px;line-height:1.8;color:#eaf6ff;letter-spacing:0.04em;min-height:50px;}
+.dialogue-text .cursor{display:inline-block;width:8px;height:18px;background:var(--c-cyan);margin-left:2px;vertical-align:middle;animation:cursorBlink 0.7s steps(1) infinite;}
+@keyframes cursorBlink{50%{opacity:0;}}
+.dialogue-next{
+  position:absolute;right:22px;bottom:14px;font-size:12px;letter-spacing:0.15em;
+  color:rgba(234,242,255,0.5);animation:nextBlink 1.4s ease-in-out infinite;
+}
+@keyframes nextBlink{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
+/* ============================================================
+   线索面板（右侧抽屉）
+   ============================================================ */
+#clue-panel{
+  position:fixed;top:60px;right:0;bottom:0;width:340px;z-index:36;
+  transform:translateX(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(180deg,rgba(10,18,34,0.88),rgba(6,10,22,0.92));
+  backdrop-filter:blur(18px);border-left:1px solid rgba(255,255,255,0.12);
+  display:flex;flex-direction:column;padding:20px 18px;
+}
+#clue-panel.open{transform:translateX(0);}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-size:16px;font-weight:700;letter-spacing:0.25em;color:#fff;}
+.panel-title .accent{color:var(--c-cyan);}
+.panel-close{width:30px;height:30px;border-radius:8px;font-size:16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
+.panel-close:hover{background:rgba(255,80,80,0.2);color:#fff;}
+.panel-subtabs{display:flex;gap:8px;margin-bottom:14px;}
+.panel-subtab{padding:6px 14px;font-size:13px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(234,242,255,0.6);transition:all .3s ease;}
+.panel-subtab.active{color:var(--c-cyan);background:rgba(0,240,255,0.12);border-color:rgba(0,240,255,0.4);}
+.panel-body{flex:1;overflow-y:auto;padding-right:4px;}
+.clue-card{
+  position:relative;padding:14px 14px 14px 18px;margin-bottom:12px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(0,240,255,0.06),rgba(74,0,128,0.10));
+  border:1px solid rgba(0,240,255,0.18);
+  animation:clueAppear .6s cubic-bezier(.2,.8,.2,1) both;
+}
+.clue-card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:2px;background:linear-gradient(var(--c-cyan),var(--c-purple));}
+@keyframes clueAppear{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.clue-card h4{font-size:14px;font-weight:700;letter-spacing:0.1em;color:var(--c-cyan);margin-bottom:6px;}
+.clue-card p{font-size:13px;line-height:1.7;color:rgba(234,242,255,0.82);}
+.empty-hint{text-align:center;color:rgba(234,242,255,0.4);font-size:13px;padding:40px 10px;line-height:1.8;}
+
+/* 碎片图鉴 */
+.fragment-card{
+  position:relative;display:flex;gap:12px;align-items:center;padding:12px;margin-bottom:12px;border-radius:12px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);
+}
+.fragment-card.collected{background:linear-gradient(135deg,rgba(255,183,197,0.10),rgba(255,215,0,0.10));border-color:rgba(255,183,197,0.4);}
+.fragment-icon{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,rgba(120,120,140,0.4),rgba(40,40,60,0.5));border:1px solid rgba(255,255,255,0.15);
+  font-size:18px;color:rgba(234,242,255,0.4);
+}
+.fragment-card.collected .fragment-icon{
+  background:radial-gradient(circle,rgba(255,215,0,0.5),rgba(255,140,60,0.3));
+  border-color:var(--c-gold);color:#fff;
+  animation:fragmentSpin 4s linear infinite;
+}
+@keyframes fragmentSpin{from{box-shadow:0 0 14px rgba(255,215,0,0.5),0 0 0 0 rgba(255,215,0,0.3);}50%{box-shadow:0 0 24px rgba(255,215,0,0.8),0 0 0 6px rgba(255,215,0,0);}to{box-shadow:0 0 14px rgba(255,215,0,0.5),0 0 0 0 rgba(255,215,0,0);}}
+.fragment-info h4{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;margin-bottom:3px;}
+.fragment-info p{font-size:12px;line-height:1.5;color:rgba(234,242,255,0.6);}
+.fragment-card.collected .fragment-info p{color:rgba(234,242,255,0.85);}
+
+/* ============================================================
+   提示系统
+   ============================================================ */
+#hint-system{
+  position:fixed;right:22px;bottom:22px;z-index:36;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+}
+#hint-box{
+  width:300px;padding:16px;border-radius:14px;max-height:240px;overflow-y:auto;
+  background:linear-gradient(135deg,rgba(10,18,34,0.9),rgba(20,10,40,0.85));
+  backdrop-filter:blur(14px);border:1px solid rgba(255,215,0,0.3);
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  opacity:0;transform:translateY(10px) scale(0.96);pointer-events:none;transition:all .35s ease;
+}
+#hint-box.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.hint-level{font-size:12px;letter-spacing:0.2em;color:var(--c-gold);margin-bottom:8px;}
+.hint-level .lv{display:inline-block;padding:1px 8px;border-radius:8px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);margin-right:6px;}
+.hint-text{font-size:13.5px;line-height:1.75;color:rgba(234,242,255,0.9);}
+.hint-btn{
+  width:52px;height:52px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,215,0,0.9),rgba(120,80,0,0.85));
+  border:2px solid rgba(255,215,0,0.6);font-size:13px;font-weight:700;letter-spacing:0.05em;color:#2a1a00;
+  box-shadow:0 0 18px rgba(255,215,0,0.4);transition:all .3s ease;
+}
+.hint-btn:hover{transform:scale(1.1) rotate(8deg);}
+
+/* ============================================================
+   弹窗通用
+   ============================================================ */
+.modal-mask{
+  position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,5,12,0.7);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .35s ease;
+}
+.modal-mask.show{opacity:1;pointer-events:auto;}
+.modal{
+  position:relative;width:min(680px,92vw);max-height:86vh;overflow-y:auto;
+  background:linear-gradient(160deg,rgba(12,20,38,0.95),rgba(8,12,26,0.97));
+  backdrop-filter:blur(18px);border:1px solid rgba(0,240,255,0.25);
+  border-radius:20px;padding:30px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 40px rgba(0,240,255,0.1);
+  transform:translateY(20px) scale(0.97);transition:transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.modal-mask.show .modal{transform:translateY(0) scale(1);}
+.modal::before{
+  content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(0,240,255,0.06),transparent 40%,rgba(74,0,128,0.10));
+}
+.modal-close{
+  position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:10px;font-size:18px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:rgba(234,242,255,0.8);
+}
+.modal-close:hover{background:rgba(255,80,80,0.25);color:#fff;transform:rotate(90deg);}
+.modal-title{font-size:24px;font-weight:700;letter-spacing:0.18em;color:#fff;margin-bottom:6px;text-shadow:0 0 14px rgba(0,240,255,0.4);}
+.modal-subtitle{font-size:13px;letter-spacing:0.3em;color:var(--c-cyan);margin-bottom:22px;font-family:'Cinzel',serif;}
+.modal-divider{height:1px;background:linear-gradient(90deg,var(--c-cyan),transparent);margin:18px 0;}
+
+/* 世界观/操作 内容块 */
+.lore-section{margin-bottom:22px;}
+.lore-section h3{
+  font-size:16px;font-weight:700;letter-spacing:0.15em;color:var(--c-gold);margin-bottom:10px;
+  padding-left:14px;border-left:3px solid var(--c-gold);
+}
+.lore-section p{font-size:14px;line-height:1.9;color:rgba(234,242,255,0.85);margin-bottom:8px;text-indent:2em;}
+.lore-card{
+  padding:14px 16px;margin-bottom:10px;border-radius:12px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);
+}
+.lore-card h4{font-size:14px;font-weight:700;letter-spacing:0.1em;color:var(--c-sky);margin-bottom:5px;}
+.lore-card p{font-size:13px;line-height:1.75;color:rgba(234,242,255,0.78);text-indent:0;}
+.char-card{display:flex;gap:14px;align-items:center;margin-bottom:12px;}
+.char-avatar{flex:0 0 auto;width:64px;height:80px;border-radius:10px;background-size:cover;background-position:center top;border:1px solid rgba(255,255,255,0.2);}
+.char-desc h4{font-size:14px;font-weight:700;color:var(--c-sakura);margin-bottom:4px;}
+.char-desc p{font-size:12.5px;line-height:1.7;color:rgba(234,242,255,0.8);text-indent:0;}
+.mech-list{list-style:none;}
+.mech-list li{font-size:13.5px;line-height:1.8;color:rgba(234,242,255,0.85);margin-bottom:8px;padding-left:20px;position:relative;}
+.mech-list li::before{content:"";position:absolute;left:0;top:11px;width:8px;height:8px;border-radius:50%;background:var(--c-cyan);box-shadow:0 0 8px var(--c-cyan);}
+
+/* 物品详情弹窗 */
+#item-modal .modal{width:min(560px,92vw);}
+.item-visual{
+  width:100%;height:160px;border-radius:14px;margin-bottom:18px;
+  background:linear-gradient(135deg,rgba(0,240,255,0.10),rgba(74,0,128,0.18));
+  border:1px solid rgba(0,240,255,0.25);display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.item-visual .item-glyph{font-size:54px;font-weight:900;color:rgba(0,240,255,0.8);text-shadow:0 0 20px rgba(0,240,255,0.6);letter-spacing:0.1em;}
+.item-visual .item-glyph.mirror{transform:scaleX(-1);}
+.item-text{font-size:15px;line-height:2;color:rgba(234,242,255,0.92);text-indent:2em;}
+.item-meta{margin-top:14px;font-size:12px;letter-spacing:0.15em;color:var(--c-cyan);}
+
+/* 密码输入弹窗 */
+#code-modal .modal{width:min(420px,92vw);text-align:center;}
+.code-display{
+  display:flex;gap:14px;justify-content:center;margin:24px 0;
+}
+.code-digit{
+  width:62px;height:78px;border-radius:14px;font-size:40px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;color:var(--c-cyan);
+  background:rgba(0,20,40,0.6);border:2px solid rgba(0,240,255,0.35);
+  box-shadow:inset 0 0 18px rgba(0,240,255,0.15),0 0 16px rgba(0,240,255,0.12);
+  text-shadow:0 0 16px rgba(0,240,255,0.8);transition:all .2s ease;
+}
+.code-digit.filled{border-color:var(--c-cyan);box-shadow:inset 0 0 22px rgba(0,240,255,0.3),0 0 22px rgba(0,240,255,0.3);}
+.code-digit.error{border-color:#ff4d6d;color:#ff4d6d;animation:shakeX .4s ease;}
+@keyframes shakeX{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.code-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+.code-key{
+  height:54px;border-radius:12px;font-size:22px;font-weight:500;color:#eaf6ff;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);transition:all .2s ease;
+}
+.code-key:hover{background:rgba(0,240,255,0.18);border-color:rgba(0,240,255,0.5);color:var(--c-cyan);}
+.code-key:active{transform:scale(0.94);}
+.code-key.del{color:#ff8da1;}
+.code-hint{font-size:13px;color:rgba(234,242,255,0.6);margin-top:14px;min-height:18px;}
+
+/* ============================================================
+   结局画面
+   ============================================================ */
+#ending-screen{
+  position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background-image:url('assets/bg_title.jpg');background-size:cover;background-position:center;
+  opacity:0;pointer-events:none;transition:opacity 1.6s ease;
+  overflow-y:auto;padding:40px 24px;
+}
+#ending-screen::before{content:"";position:absolute;inset:0;background:rgba(3,5,12,0.78);}
+#ending-screen.show{opacity:1;pointer-events:auto;}
+.ending-content{position:relative;z-index:2;text-align:center;max-width:760px;padding:0 24px;}
+.ending-tag{font-family:'Cinzel',serif;font-size:14px;letter-spacing:0.5em;color:var(--c-cyan);margin-bottom:18px;}
+.ending-title{font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:0.15em;color:#fff;text-shadow:0 0 24px rgba(0,240,255,0.6);margin-bottom:30px;}
+.ending-text{font-size:17px;line-height:2.2;color:rgba(234,242,255,0.92);text-align:left;text-indent:2em;margin-bottom:34px;}
+.ending-text p{margin-bottom:10px;}
+.ending-cta{font-size:16px;letter-spacing:0.3em;color:var(--c-gold);text-shadow:0 0 14px rgba(255,215,0,0.5);animation:endingCta 2.4s ease-in-out infinite;}
+@keyframes endingCta{0%,100%{opacity:0.6;}50%{opacity:1;}}
+.ending-btns{margin-top:30px;display:flex;gap:16px;justify-content:center;}
+
+/* ============================================================
+   通知 / 粒子特效层
+   ============================================================ */
+#toast-container{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.toast{
+  padding:12px 26px;border-radius:24px;font-size:14px;letter-spacing:0.12em;color:#fff;
+  background:linear-gradient(135deg,rgba(0,240,255,0.25),rgba(74,0,128,0.35));
+  backdrop-filter:blur(12px);border:1px solid rgba(0,240,255,0.4);
+  box-shadow:0 6px 24px rgba(0,0,0,0.4);animation:toastIn .4s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:translateY(0);}}
+.toast.out{animation:toastOut .4s ease forwards;}
+@keyframes toastOut{to{opacity:0;transform:translateY(-16px);}}
+#fx-canvas{position:fixed;inset:0;z-index:55;pointer-events:none;}
+
+/* 世界异常效果 */
+.glitch-overlay{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:0;}
+.glitch-overlay.active{opacity:1;animation:glitchFlicker 0.18s steps(2) infinite;}
+@keyframes glitchFlicker{0%{background:linear-gradient(90deg,rgba(0,240,255,0.06),transparent,rgba(255,0,128,0.06));}50%{background:linear-gradient(0deg,rgba(74,0,128,0.12),transparent,rgba(0,240,255,0.08));}100%{background:linear-gradient(45deg,rgba(255,0,128,0.05),transparent,rgba(0,240,255,0.10));}}
+.glitch-lines{position:fixed;inset:0;z-index:71;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(0,240,255,0.05) 0px,rgba(0,240,255,0.05) 1px,transparent 2px,transparent 4px);}
+.glitch-lines.active{opacity:1;animation:glitchShift 0.12s steps(3) infinite;}
+@keyframes glitchShift{0%{transform:translateY(0);}33%{transform:translateY(-3px) translateX(2px);}66%{transform:translateY(2px) translateX(-3px);}100%{transform:translateY(0);}}
+.shake{animation:worldShake 0.5s ease;}
+@keyframes worldShake{0%,100%{transform:translate(0,0);}10%{transform:translate(-4px,2px);}20%{transform:translate(5px,-3px);}30%{transform:translate(-3px,4px);}40%{transform:translate(4px,2px);}50%{transform:translate(-5px,-2px);}60%{transform:translate(3px,3px);}70%{transform:translate(-2px,-4px);}80%{transform:translate(4px,1px);}90%{transform:translate(-3px,2px);}}
+
+/* 飞向图鉴的收集粒子 */
+.collect-particle{position:fixed;z-index:56;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff,var(--c-gold));box-shadow:0 0 12px var(--c-gold);pointer-events:none;}
+
+/* 场景转场黑幕 */
+#transition-veil{position:fixed;inset:0;z-index:50;background:#05070f;opacity:0;pointer-events:none;transition:opacity .4s ease;}
+#transition-veil.show{opacity:1;}
+
+/* 存档提示 */
+.save-tag{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:60;font-size:13px;color:var(--c-cyan);background:rgba(8,14,28,0.8);padding:8px 18px;border-radius:16px;border:1px solid rgba(0,240,255,0.3);opacity:0;transition:opacity .4s ease;}
+.save-tag.show{opacity:1;}
+
+/* ============================================================
+   可交互浮动提示（进入场景时引导，3秒淡出）
+   ============================================================ */
+#interact-prompt{
+  position:fixed;left:50%;top:62%;transform:translate(-50%,0);z-index:42;
+  padding:10px 26px;border-radius:24px;font-size:15px;letter-spacing:0.18em;color:#fff;
+  background:rgba(8,14,28,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,215,0,0.45);box-shadow:0 0 24px rgba(255,215,0,0.3);
+  opacity:0;pointer-events:none;transition:opacity .6s ease;
+}
+#interact-prompt.show{opacity:1;}
+#interact-prompt .ip-icon{display:inline-block;margin-right:8px;color:var(--c-gold);animation:ipBlink 1.2s ease-in-out infinite;}
+@keyframes ipBlink{0%,100%{opacity:0.5;}50%{opacity:1;}}
+
+/* ============================================================
+   场景内环境文字（左下角场景描述，半透明不遮挡）
+   ============================================================ */
+.scene-ambience{
+  position:fixed;left:24px;bottom:24px;z-index:24;max-width:380px;
+  padding:14px 18px;border-radius:14px;
+  background:rgba(5,8,16,0.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.08);
+  font-size:13.5px;line-height:1.85;color:rgba(234,242,255,0.7);
+  letter-spacing:0.04em;text-shadow:0 1px 4px rgba(0,0,0,0.6);
+  pointer-events:none;opacity:0;transition:opacity .8s ease;font-style:italic;
+}
+.scene-ambience.show{opacity:1;}
+.scene-ambience.dim{opacity:0.12;} /* 对话进行时降低环境文字存在感 */
+.scene-ambience .amb-accent{color:rgba(0,240,255,0.75);font-style:normal;}
+
+/* ============================================================
+   场景名称大字幕（切换时淡入淡出）
+   ============================================================ */
+#scene-name-title{
+  position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);z-index:40;
+  text-align:center;pointer-events:none;opacity:0;
+}
+#scene-name-title.show{animation:sceneNameShow 2.6s ease forwards;}
+@keyframes sceneNameShow{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(1.1);filter:blur(8px);}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0);}
+  78%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(0.96);filter:blur(4px);}
+}
+.scene-name-zh{font-size:clamp(34px,5vw,56px);font-weight:900;letter-spacing:0.3em;color:#fff;
+  text-shadow:0 0 24px rgba(0,240,255,0.7),0 0 48px rgba(74,0,128,0.5),0 4px 20px rgba(0,0,0,0.7);padding-left:0.3em;}
+.scene-name-en{font-family:'Cinzel',serif;font-size:14px;letter-spacing:0.45em;color:var(--c-cyan);margin-top:10px;opacity:0.85;}
+.scene-name-line{width:200px;height:1px;margin:16px auto 0;background:linear-gradient(90deg,transparent,var(--c-cyan),transparent);}
+
+/* 对话框角色名字颜色区分：直实蓝、瑠璃粉、成年直实绿、狐面行者灰 */
+.dialogue-name.name-nao{color:#6FB7FF;text-shadow:0 0 10px rgba(111,183,255,0.5);}
+.dialogue-name.name-ruri{color:#FF8FB3;text-shadow:0 0 10px rgba(255,143,179,0.5);}
+.dialogue-name.name-adult{color:#5BE6A0;text-shadow:0 0 10px rgba(91,230,160,0.5);}
+.dialogue-name.name-fox{color:#B8B8C8;text-shadow:0 0 10px rgba(184,184,200,0.5);}
+
+/* 密码键盘按压反馈动画 */
+.code-key{position:relative;overflow:hidden;}
+.code-key::after{content:"";position:absolute;inset:0;border-radius:12px;
+  background:radial-gradient(circle at center,rgba(0,240,255,0.45),transparent 70%);
+  opacity:0;transform:scale(0.5);}
+.code-key.pressed::after{opacity:1;transform:scale(1.6);transition:transform .4s ease,opacity .4s ease;}
+.code-key.pressed{transform:scale(0.9);}
+
+/* 碎片卡片入场动画（与线索卡片一致） */
+.fragment-card{animation:clueAppear .6s cubic-bezier(.2,.8,.2,1) both;}
+
+/* ============================================================
+   结局制作名单滚动 + 完整版预告
+   ============================================================ */
+.ending-credits{
+  margin:24px auto 0;max-width:560px;height:180px;overflow:hidden;position:relative;
+  border-top:1px solid rgba(0,240,255,0.2);border-bottom:1px solid rgba(0,240,255,0.2);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);
+  mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);
+}
+.ending-credits-inner{animation:creditsScroll 20s linear infinite;text-align:center;padding:10px 0;}
+@keyframes creditsScroll{0%{transform:translateY(100%);}100%{transform:translateY(-100%);}}
+.credits-line{font-size:13px;letter-spacing:0.18em;color:rgba(234,242,255,0.72);margin:6px 0;}
+.credits-role{font-size:11px;letter-spacing:0.3em;color:var(--c-cyan);margin-bottom:2px;}
+.credits-sep{height:1px;width:120px;margin:14px auto;background:linear-gradient(90deg,transparent,rgba(0,240,255,0.4),transparent);}
+.ending-preview{
+  margin-top:22px;padding:14px 20px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(74,0,128,0.25),rgba(0,240,255,0.10));
+  border:1px solid rgba(0,240,255,0.3);
+}
+.ending-preview .ep-tag{font-family:'Cinzel',serif;font-size:12px;letter-spacing:0.4em;color:var(--c-gold);margin-bottom:6px;}
+.ending-preview .ep-text{font-size:14px;line-height:1.8;color:rgba(234,242,255,0.9);font-style:italic;}
+
+@media (max-width:760px){
+  #clue-panel{width:88vw;}
+  .game-title{font-size:54px;}
+  #reality-toggle{left:12px;width:54px;height:54px;}
+  .nav-logo{display:none;}
+  .scene-ambience{max-width:78vw;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 全局星光特效画布 -->
+<canvas id="fx-canvas"></canvas>
+
+<!-- ==================== 开始界面 ==================== -->
+<div id="title-screen">
+  <div class="title-glow"></div>
+  <canvas id="title-particle-canvas" class="petal-canvas"></canvas>
+  <div class="title-content">
+    <h1 class="game-title">颠倒世界</h1>
+    <div class="title-sub-zh">重启序章</div>
+    <div class="title-sub-en">THE REVERSED WORLD &mdash; PROLOGUE</div>
+    <div class="title-divider"></div>
+    <div class="title-buttons">
+      <button class="tbtn" id="btn-start"><span>开始游戏</span></button>
+      <button class="tbtn" id="btn-continue"><span>继续游戏</span></button>
+      <button class="tbtn" id="btn-lore"><span>世界观设定</span></button>
+      <button class="tbtn" id="btn-controls"><span>操作指南</span></button>
+    </div>
+  </div>
+  <div class="title-footer">© 2026 REVERSED WORLD STUDIO &nbsp;|&nbsp; <b>VER 1.0</b> &nbsp;|&nbsp; 一场关于记忆与重逢的夏日</div>
+</div>
+
+<!-- ==================== 主游戏界面 ==================== -->
+<div id="game-screen">
+  <!-- 顶部导航 -->
+  <div id="top-nav">
+    <div class="nav-logo">颠倒世界<span class="dot">·</span>序章</div>
+    <div class="scene-tabs">
+      <button class="scene-tab active" data-scene="classroom">教室</button>
+      <button class="scene-tab locked" data-scene="shrine">鸟居</button>
+      <button class="scene-tab locked" data-scene="river">河畔</button>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="nav-clue" title="线索面板">线索</button>
+      <button class="nav-btn" id="nav-frag" title="记忆碎片">碎片<span class="badge" id="frag-badge" style="display:none">0</span></button>
+      <button class="nav-btn" id="nav-save" title="存档">存档</button>
+      <button class="nav-btn" id="nav-menu" title="返回标题">返回</button>
+    </div>
+  </div>
+
+  <!-- 虚实切换 -->
+  <button id="reality-toggle" class="disabled" title="切换虚实（崩坏态）">
+    <span>虚</span><span>实</span>
+  </button>
+
+  <!-- 场景容器（由JS动态生成热点） -->
+  <div id="scene-container">
+    <div class="scene active" id="scene-classroom"></div>
+    <div class="scene" id="scene-shrine"></div>
+    <div class="scene" id="scene-river"></div>
+  </div>
+
+  <!-- 雨画布 -->
+  <canvas id="rain-canvas"></canvas>
+  <!-- 游戏内樱花花瓣画布 -->
+  <canvas id="game-particle-canvas" class="petal-canvas"></canvas>
+
+  <!-- 对话框 -->
+  <div id="dialogue-box">
+    <div class="dialogue-avatar" id="dialogue-avatar"></div>
+    <div class="dialogue-content">
+      <div class="dialogue-name" id="dialogue-name"></div>
+      <div class="dialogue-text" id="dialogue-text"></div>
+    </div>
+    <div class="dialogue-next">点击继续 ▼</div>
+  </div>
+
+  <!-- 线索面板 -->
+  <div id="clue-panel">
+    <div class="panel-head">
+      <div class="panel-title">线索 <span class="accent">/ 碎片</span></div>
+      <button class="panel-close" id="panel-close">✕</button>
+    </div>
+    <div class="panel-subtabs">
+      <button class="panel-subtab active" data-tab="clue">线索</button>
+      <button class="panel-subtab" data-tab="frag">碎片</button>
+    </div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+
+  <!-- 提示系统 -->
+  <div id="hint-system">
+    <div id="hint-box">
+      <div class="hint-level"><span class="lv" id="hint-lv">1</span>级提示</div>
+      <div class="hint-text" id="hint-text"></div>
+    </div>
+    <button class="hint-btn" id="hint-btn">提示</button>
+  </div>
+
+  <div class="save-tag" id="save-tag">进度已保存</div>
+
+  <!-- 可交互浮动提示 -->
+  <div id="interact-prompt"><span class="ip-icon">◉</span>点击发光点进行调查</div>
+
+  <!-- 场景内环境文字（左下角） -->
+  <div class="scene-ambience" id="scene-ambience"></div>
+
+  <!-- 场景名称大字幕 -->
+  <div id="scene-name-title">
+    <div class="scene-name-zh" id="scene-name-zh"></div>
+    <div class="scene-name-en" id="scene-name-en"></div>
+    <div class="scene-name-line"></div>
+  </div>
+</div>
+
+<!-- ==================== 弹窗 ==================== -->
+<!-- 世界观设定 -->
+<div class="modal-mask" id="lore-modal">
+  <div class="modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-title">世界观设定</div>
+    <div class="modal-subtitle">WORLD LORE &amp; SETTING</div>
+    <div id="lore-body"></div>
+  </div>
+</div>
+
+<!-- 操作指南 -->
+<div class="modal-mask" id="controls-modal">
+  <div class="modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-title">操作指南</div>
+    <div class="modal-subtitle">HOW TO PLAY</div>
+    <div id="controls-body"></div>
+  </div>
+</div>
+
+<!-- 物品详情 -->
+<div class="modal-mask" id="item-modal">
+  <div class="modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-title" id="item-title">物品</div>
+    <div class="modal-subtitle" id="item-sub">ITEM DETAIL</div>
+    <div class="item-visual"><div class="item-glyph" id="item-glyph"></div></div>
+    <div class="item-text" id="item-text"></div>
+    <div class="item-meta" id="item-meta"></div>
+  </div>
+</div>
+
+<!-- 密码输入 -->
+<div class="modal-mask" id="code-modal">
+  <div class="modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="modal-title" id="code-title">输入密码</div>
+    <div class="modal-subtitle">ENTER CODE</div>
+    <div class="code-display" id="code-display"></div>
+    <div class="code-pad" id="code-pad"></div>
+    <div class="code-hint" id="code-hint"></div>
+  </div>
+</div>
+
+<!-- 结局画面 -->
+<div id="ending-screen">
+  <div class="ending-content">
+    <div class="ending-tag">EPILOGUE</div>
+    <div class="ending-title">序章·终</div>
+    <div class="ending-text" id="ending-text"></div>
+    <!-- 制作名单滚动 -->
+    <div class="ending-credits"><div class="ending-credits-inner" id="ending-credits"></div></div>
+    <!-- 完整版预告 -->
+    <div class="ending-preview" id="ending-preview"></div>
+    <div class="ending-cta" id="ending-cta">完整版待续</div>
+    <div class="ending-btns">
+      <button class="tbtn" id="ending-restart"><span>重新开始</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- 特效层 -->
+<div class="glitch-overlay" id="glitch-overlay"></div>
+<div class="glitch-lines" id="glitch-lines"></div>
+<div id="transition-veil"></div>
+<div id="toast-container"></div>
+
+<script>
+/* ============================================================
+   颠倒世界：重启序章 —— 主程序
+   ============================================================ */
+"use strict";
+
+/* ============================================================
+   一、音频系统（Web Audio API）
+   ============================================================ */
+const AudioSys = (() => {
+  let ctx = null;
+  function ensure(){ if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ctx; }
+  // 点击音效：短促正弦波
+  function click(){
+    const c = ensure(); if(!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(880,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(440,c.currentTime+0.12);
+    g.gain.setValueAtTime(0.18,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.14);
+    o.connect(g); g.connect(c.destination);
+    o.start(); o.stop(c.currentTime+0.15);
+  }
+  // 发现线索：C-E-G 三连音
+  function clue(){
+    const c = ensure(); if(!c) return;
+    [523.25,659.25,783.99].forEach((f,i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.type='sine'; o.frequency.value=f;
+      const t=c.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.2,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t+0.55);
+    });
+  }
+  // 场景切换：渐弱滑音
+  function transition(){
+    const c = ensure(); if(!c) return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(660,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(110,c.currentTime+0.7);
+    g.gain.setValueAtTime(0.16,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8);
+    o.connect(g); g.connect(c.destination);
+    o.start(); o.stop(c.currentTime+0.85);
+  }
+  // 异常音效：锯齿波随机频率
+  function glitch(){
+    const c = ensure(); if(!c) return;
+    for(let i=0;i<6;i++){
+      const o=c.createOscillator(),g=c.createGain();
+      o.type='sawtooth';
+      o.frequency.value=120+Math.random()*1400;
+      const t=c.currentTime+i*0.07;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.12,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.09);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t+0.1);
+    }
+  }
+  // 收集碎片音效：上行清脆音
+  function collect(){
+    const c = ensure(); if(!c) return;
+    [783.99,987.77,1318.51].forEach((f,i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.type='sine'; o.frequency.value=f;
+      const t=c.currentTime+i*0.08;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.18,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t+0.45);
+    });
+  }
+  return { click, clue, transition, glitch, collect, ensure };
+})();
+
+/* ============================================================
+   二、粒子系统（樱花花瓣 / 光点 / 星光 / 收集飞粒子）
+   标题与游戏各用一个花瓣画布，按模式切换绘制目标。
+   ============================================================ */
+const ParticleSys = (() => {
+  const titleCanvas = document.getElementById('title-particle-canvas');
+  const gameCanvas = document.getElementById('game-particle-canvas');
+  const fxCanvas = document.getElementById('fx-canvas');
+  const tCtx = titleCanvas.getContext('2d');
+  const gCtx = gameCanvas.getContext('2d');
+  const fxCtx = fxCanvas.getContext('2d');
+  let petals = [], stars = [], mode = 'title';
+  let W=0,H=0;
+  let ctx = tCtx; // 当前花瓣绘制上下文
+
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    titleCanvas.width = gameCanvas.width = fxCanvas.width = W;
+    titleCanvas.height = gameCanvas.height = fxCanvas.height = H;
+  }
+  window.addEventListener('resize', resize); resize();
+
+  // 樱花花瓣
+  function makePetal(){
+    return {
+      x: Math.random()*W,
+      y: -20 - Math.random()*H*0.5,
+      size: 6+Math.random()*10,
+      speedY: 0.4+Math.random()*1.1,
+      speedX: -0.6+Math.random()*1.2,
+      sway: Math.random()*Math.PI*2,
+      swaySpeed: 0.01+Math.random()*0.02,
+      rot: Math.random()*Math.PI*2,
+      rotSpeed: -0.03+Math.random()*0.06,
+      alpha: 0.5+Math.random()*0.5,
+      hue: 340+Math.random()*20 // 樱粉
+    };
+  }
+  function initPetals(n){
+    petals = [];
+    for(let i=0;i<n;i++){ petals.push(makePetal()); petals[i].y = Math.random()*H; }
+  }
+  function drawPetal(p){
+    ctx.save();
+    ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    ctx.globalAlpha = p.alpha;
+    const grd = ctx.createRadialGradient(0,0,0,0,0,p.size);
+    grd.addColorStop(0,`hsla(${p.hue},90%,85%,1)`);
+    grd.addColorStop(1,`hsla(${p.hue},80%,70%,0.2)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.ellipse(0,0,p.size*0.7,p.size*1.3,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  // 星光粒子（发现线索时）
+  function burstStars(x,y,color){
+    for(let i=0;i<26;i++){
+      const a = Math.random()*Math.PI*2, s = 1+Math.random()*4;
+      stars.push({
+        x,y, vx:Math.cos(a)*s, vy:Math.sin(a)*s,
+        life:1, size:1+Math.random()*3,
+        color: color||'#FFD700'
+      });
+    }
+  }
+  // 收集粒子飞向图鉴按钮
+  function collectFly(fromX,fromY){
+    const target = document.getElementById('nav-frag').getBoundingClientRect();
+    const tx = target.left+target.width/2, ty = target.top+target.height/2;
+    const el = document.createElement('div');
+    el.className='collect-particle';
+    el.style.left=fromX+'px'; el.style.top=fromY+'px';
+    document.body.appendChild(el);
+    const dx=tx-fromX, dy=ty-fromY;
+    el.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy}px) scale(0.2)`,opacity:0}
+    ],{duration:800,easing:'cubic-bezier(.5,0,.5,1)'});
+    setTimeout(()=>el.remove(),820);
+  }
+
+  function loop(){
+    // 清空当前花瓣画布
+    ctx.clearRect(0,0,W,H);
+    if(mode==='title' || mode==='game'){
+      petals.forEach(p=>{
+        p.sway += p.swaySpeed;
+        p.x += p.speedX + Math.sin(p.sway)*0.6;
+        p.y += p.speedY;
+        p.rot += p.rotSpeed;
+        if(p.y > H+20){ Object.assign(p, makePetal()); p.y=-20; }
+        if(p.x < -20) p.x = W+20; if(p.x > W+20) p.x = -20;
+        drawPetal(p);
+      });
+    }
+    // 星光
+    fxCtx.clearRect(0,0,W,H);
+    stars = stars.filter(s=>s.life>0);
+    stars.forEach(s=>{
+      s.x+=s.vx; s.y+=s.vy; s.vy+=0.05; s.life-=0.02;
+      fxCtx.globalAlpha = Math.max(0,s.life);
+      fxCtx.fillStyle = s.color;
+      fxCtx.shadowBlur = 12; fxCtx.shadowColor = s.color;
+      fxCtx.beginPath(); fxCtx.arc(s.x,s.y,s.size,0,Math.PI*2); fxCtx.fill();
+    });
+    fxCtx.globalAlpha = 1; fxCtx.shadowBlur = 0;
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  return {
+    setMode(m){
+      mode = m; initPetals(m==='title'?60:22);
+      ctx = (m==='title') ? tCtx : gCtx;
+      // 切换时清空另一画布，避免残留
+      if(m==='title'){ gCtx.clearRect(0,0,W,H); } else { tCtx.clearRect(0,0,W,H); }
+    },
+    burstStars, collectFly,
+    resize
+  };
+})();
+
+/* ============================================================
+   三、游戏状态
+   ============================================================ */
+const GameState = {
+  scene: 'classroom',
+  reality: 'normal',         // normal | corrupted
+  realityUnlocked: false,
+  clues: [],                  // {id,title,text}
+  fragments: [],              // {id,name,desc,collected}
+  flags: {},                  // 通用标记
+  hintLevel: 0,
+  started: false,
+
+  // 教室
+  classroom: {
+    diary:false, windchime:false, blackboard:false, textbook:false, sticky:false, graffiti:false,
+    codeSolved:false, realityFirstDone:false
+  },
+  // 神社
+  shrine: {
+    lanterns:[false,false,false,false,false], lanternSolved:false,
+    tablet:false, painting:false, codeSolved:false
+  },
+  // 河畔
+  river: {
+    water:false, f1:false, f2:false, f3:false, glitchTriggered:false, ended:false
+  },
+  unlockedScenes: ['classroom'],
+
+  reset(){
+    this.scene='classroom'; this.reality='normal'; this.realityUnlocked=false;
+    this.clues=[]; this.fragments=[]; this.flags={}; this.hintLevel=0; this.started=true;
+    this.classroom={diary:false,windchime:false,blackboard:false,textbook:false,sticky:false,graffiti:false,codeSolved:false,realityFirstDone:false};
+    this.shrine={lanterns:[false,false,false,false,false],lanternSolved:false,tablet:false,painting:false,codeSolved:false};
+    this.river={water:false,f1:false,f2:false,f3:false,glitchTriggered:false,ended:false};
+    this.unlockedScenes=['classroom'];
+  }
+};
+
+/* ============================================================
+   四、UI 工具函数
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function showToast(msg){
+  const c = $('toast-container');
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg; c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),400); }, 2400);
+}
+function showSaveTag(){
+  const t=$('save-tag'); t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1400);
+}
+
+// 物品详情弹窗
+function showItem(title, subtitle, glyph, text, meta, glyphMirror){
+  $('item-title').textContent=title;
+  $('item-sub').textContent=subtitle||'ITEM DETAIL';
+  const g=$('item-glyph'); g.textContent=glyph||''; g.className='item-glyph'+(glyphMirror?' mirror':'');
+  $('item-text').textContent=text;
+  $('item-meta').textContent=meta||'';
+  openModal('item-modal');
+}
+function openModal(id){ $(id).classList.add('show'); }
+function closeModal(id){ $(id).classList.remove('show'); }
+// 通用关闭
+document.addEventListener('click',e=>{
+  if(e.target.hasAttribute('data-close')){
+    const m=e.target.closest('.modal-mask'); if(m) m.classList.remove('show');
+  }
+  if(e.target.classList.contains('modal-mask')){ e.target.classList.remove('show'); }
+});
+
+// 密码输入弹窗
+let codeState = { digits:3, input:[], cb:null, errCb:null };
+function showCode(title, digitCount, hint, callback, errCb){
+  codeState = { digits:digitCount, input:[], cb:callback, errCb:errCb||null };
+  $('code-title').textContent=title||'输入密码';
+  $('code-hint').textContent=hint||'';
+  // 渲染显示框
+  const disp=$('code-display'); disp.innerHTML='';
+  for(let i=0;i<digitCount;i++){
+    const d=document.createElement('div'); d.className='code-digit'; d.dataset.i=i; disp.appendChild(d);
+  }
+  // 渲染键盘 1-9,0,清空,删除
+  const pad=$('code-pad'); pad.innerHTML='';
+  ['1','2','3','4','5','6','7','8','9','清','0','⌫'].forEach(k=>{
+    const b=document.createElement('button'); b.className='code-key'; b.textContent=k;
+    if(k==='清') b.classList.add('del');
+    b.addEventListener('click',()=>{
+      AudioSys.click();
+      // 按压反馈动画
+      b.classList.add('pressed');
+      setTimeout(()=>b.classList.remove('pressed'),400);
+      pressCode(k);
+    });
+    pad.appendChild(b);
+  });
+  updateCodeDisplay();
+  openModal('code-modal');
+}
+function pressCode(k){
+  if(k==='⌫'){ codeState.input.pop(); }
+  else if(k==='清'){ codeState.input=[]; }
+  else if(codeState.input.length<codeState.digits){ codeState.input.push(k); }
+  updateCodeDisplay();
+  if(codeState.input.length===codeState.digits){
+    const val = codeState.input.join('');
+    setTimeout(()=>{
+      if(codeState.cb && codeState.cb(val)){
+        // 正确
+        document.querySelectorAll('.code-digit').forEach(d=>d.classList.add('filled'));
+        AudioSys.clue();
+        setTimeout(()=>closeModal('code-modal'),700);
+      } else {
+        // 错误
+        document.querySelectorAll('.code-digit').forEach(d=>{d.classList.add('error');});
+        AudioSys.glitch();
+        if(codeState.errCb) codeState.errCb();
+        setTimeout(()=>{
+          codeState.input=[];
+          updateCodeDisplay();
+          document.querySelectorAll('.code-digit').forEach(d=>d.classList.remove('error'));
+        },600);
+      }
+    },180);
+  }
+}
+function updateCodeDisplay(){
+  document.querySelectorAll('.code-digit').forEach((d,i)=>{
+    d.textContent = codeState.input[i]||'';
+    d.classList.toggle('filled', !!codeState.input[i]);
+  });
+}
+
+/* ============================================================
+   五、对话系统
+   ============================================================ */
+const Dialogues = {
+  /* 成年直实首次登场：解释世界本质 + 直实质疑 + 瑠璃暗示（7句） */
+  adultFirstAppear: [
+    {who:'adult',name:'成年直实',text:'……你终于注意到这层世界的裂痕了吗。不必惊慌，我并非幻觉——我是你，或者说，是十年后留在这条时间线上的投影。'},
+    {who:'adult',name:'成年直实',text:'这间教室看起来一切如常：阳光、粉笔灰、风铃的声音……可只要你凝视得够久，就会发现现实正从边缘开始剥落，像一张受潮的旧照片。'},
+    {who:'adult',name:'成年直实',text:'你以为只有「一个」世界，其实它有四层：表层、虚像层、数据层、因果层。它们像叠在一起的玻璃，彼此映照，却又互不相通。而我所在的，是已经崩坏的层。'},
+    {who:'nao',name:'直实',text:'四层世界……？你在说什么啊。我不记得做过这种梦，也根本不认识什么「十年后的自己」。你是不是找错人了？'},
+    {who:'adult',name:'成年直实',text:'你当然不记得。这段记忆被因果层反复擦写，每一次重启，你都会从「忘记」开始。但你的心会替你记得——比如那个总是回荡在耳边的名字。'},
+    {who:'nao',name:'直实',text:'名字……你是说，瑠璃？她那个夏末在鸭川消失之后，我一直觉得她没有真正离开。难道……她真的还在某个地方？'},
+    {who:'adult',name:'成年直实',text:'记住这个数字——7、3、9。它会带你穿过千本鸟居的阴影，去往世界的背面。当你准备好直面真相，就来伏见稻荷找我。到那时，我会告诉你，关于「她」被困在哪一层的事。'}
+  ],
+  /* 教室完成：739含义深入 + 伏见稻荷描述（6句） */
+  classroomComplete: [
+    {who:'nao',name:'直实',text:'涂鸦上的「εCL」翻转过来是739，和便利贴上写的一模一样。这串数字反复出现，绝不可能是巧合。'},
+    {who:'nao',name:'直实',text:'黑板输入739之后，那串闪烁的频率……像是某种信号，在重复呼唤什么。它有节奏，有停顿，像是一句话被翻译成了光。'},
+    {who:'adult',name:'成年直实',text:'做得好。你开始学会「阅读」这个世界了——表象之下，处处都是密语。739不是随机数字，是她在崩坏前亲手刻下的坐标，指向虚像层里她的位置。'},
+    {who:'nao',name:'直实',text:'坐标……所以7、3、9对应的是某种空间索引？她在世界的「背面」，而我一直在看着「正面」？'},
+    {who:'adult',name:'成年直实',text:'正是。伏见稻荷的千本鸟居，是表层与虚像层之间最薄的交界。黄昏时分，朱红的柱子会层层叠叠地延伸进幽暗深处，鸟居尽头的那道光，就是通往她所在的层。'},
+    {who:'nao',name:'直实',text:'另一个时空……瑠璃，你究竟在哪里。我这就去千本鸟居找你。'}
+  ],
+  /* 新增：教室密码输入错误时触发（3句） */
+  classroomCodeWrong: [
+    {who:'nao',name:'直实',text:'不对，不是这个数字。黑板的数字锁没有反应，闪烁的频率也没有变化。'},
+    {who:'nao',name:'直实',text:'我一定漏看了什么。课桌角落的涂鸦、压在课本下的便利贴……它们之间应该有联系。'},
+    {who:'adult',name:'成年直实',text:'（远处的回响）试着把颠倒的东西，翻回它原本的样子。镜子里看到的，从来都不是答案本身。'}
+  ],
+  /* 神社登场：鸟居氛围 + 狐面行者谜语（7句） */
+  shrineEnter: [
+    {who:'nao',name:'直实',text:'千本鸟居……黄昏的红色浸透了每一根柱子，像是要把天空也染进去。鸟居一层叠着一层，往幽暗的深处无限延伸。'},
+    {who:'nao',name:'直实',text:'空气里有线香的余味，可脚下却泛起一阵不属于这个季节的凉意。这里是表层与虚像层最薄的交界，连风都带着两个时空的味道。'},
+    {who:'nao',name:'直实',text:'路边的石碑上刻着字，可是反的，像照镜子一样，得在心里翻过来才读得通。'},
+    {who:'fox',name:'狐面行者',text:'迷途的旅人啊，你看到的不是倒影，而是世界的背面。能走到这里，说明你已读懂了739的第一层含义。'},
+    {who:'fox',name:'狐面行者',text:'但鸟居不会为任何一个路人让路。唯有点亮正确的灯笼，它才会让出那条通往虚像层的路。'},
+    {who:'fox',name:'狐面行者',text:'「奇者为正，偶者为虚」——记住这句古老的诫律。正与虚之间，藏着你想要的答案，也藏着你尚未察觉的代价。'},
+    {who:'nao',name:'直实',text:'代价……？喂，等等！他走了，只剩面具下意味深长的笑。这些灯笼，到底该点亮哪几盏？'}
+  ],
+  /* 神社密码正确：瑠璃画作详细描述 + 直实情感反应（6句） */
+  shrineCodeCorrect: [
+    {who:'fox',name:'狐面行者',text:'7、3、9……你果然记起来了。这串数字，是她在崩坏前亲手刻下的坐标。鸟居为你让出了路。'},
+    {who:'fox',name:'狐面行者',text:'看这幅画。她画的不是眼前的风景，而是即将崩塌的世界——天空倒悬，鸟居扭曲成螺旋，鸭川的水流向了相反的方向。她早已预见了一切。'},
+    {who:'nao',name:'直实',text:'画里的色调温暖又忧郁，黄昏的河面上倒映着颠倒的天空。画框背面有一行小字：「如果有一天世界颠倒了，请记得来这里找我。」'},
+    {who:'ruri',name:'一行瑠璃',text:'（画中传来的低语）……对不起，我没能等到那场夏天的结束。我把能说的话，都画进了颜色里。'},
+    {who:'nao',name:'直实',text:'瑠璃！这声音……她的意识，竟然被封存在这幅画里？她一直在等，等我读懂这些颜色。'},
+    {who:'fox',name:'狐面行者',text:'她被困在两层世界的夹缝之间，画作只是她伸出的手。要去真正触碰她，你得去她消失的地方——雨夜的鸭川。那里封存着她散落的记忆碎片。'}
+  ],
+  /* 河畔登场：雨夜氛围 + 记忆碎片解释（6句） */
+  riverEnter: [
+    {who:'nao',name:'直实',text:'鸭川的雨……每一滴落进水里，都像是某段记忆的碎片在下沉。路灯把我的影子拉得很长，长得像是另一个人站在我身后。'},
+    {who:'nao',name:'直实',text:'雨声盖过了一切，可越是这样，越能听见水底有什么在低低地呼唤。水面之下，似乎有什么东西在一闪一闪地发光。'},
+    {who:'adult',name:'成年直实',text:'这里，是她最后消失的地方。河面之下封存着她散落的记忆碎片——她消失的那一刻，意识被打碎成了三份，沉进了这条河。'},
+    {who:'adult',name:'成年直实',text:'把它们逐一拾回，你才能真正听见她的回响。每一枚碎片，都封着她的一段意识，也封着这个世界的一段真相。'},
+    {who:'nao',name:'直实',text:'三枚碎片……她把自己分成了三份，留在这条河里等我。我一定全部找回来。'},
+    {who:'adult',name:'成年直实',text:'但要小心——拾起第二枚碎片之后，现实层与虚像层会开始重叠，世界会变得不稳。那时，因果层的「猎时者」也会察觉到异常。做好准备。'}
+  ],
+  /* 瑠璃记忆：更多回忆片段 + 直实情感回应（5句） */
+  ruriMemory: [
+    {who:'ruri',name:'一行瑠璃',text:'那天夏末，我看着倒映在河里的天空，对你说想看一次颠倒过来的世界……我以为那只是一个孩子气的愿望。'},
+    {who:'ruri',name:'一行瑠璃',text:'我没有真正离开。我只是去到了一个你看不见的层，夹在现实与虚像之间。这里的时间是凝滞的，那个夏天，永远没有结束。'},
+    {who:'ruri',name:'一行瑠璃',text:'我把未寄出的画留在了神社，把未说完的话留在了河里。如果你能听到这些，就说明两层世界的界限，正在一点一点变薄。'},
+    {who:'nao',name:'直实',text:'瑠璃……对不起，我那时没有听懂你话里的意思。原来你早就看见了颠倒的世界，却一个人承受着。'},
+    {who:'ruri',name:'一行瑠璃',text:'别自责。是我选择留下的——为了在你终于能看见这层世界的时候，还能有人在这里等你。现在，去拾起最后的光吧。'}
+  ],
+  /* 世界崩坏：详细描写 + 狐面行者威胁 + 紧张感（7句） */
+  worldGlitch: [
+    {who:'nao',name:'直实',text:'什么……天空在撕裂！红色的鸟居扭曲成螺旋，数据像雪崩一样在眼前崩解，连雨都悬停在了半空！'},
+    {who:'adult',name:'成年直实',text:'现实层和虚像层正在重叠！这是拾起第二枚碎片的反噬——抓紧你的意识，别让它被冲散到因果的缝隙里！'},
+    {who:'fox',name:'狐面行者',text:'猎时者来了。它栖息在因果层，专门抹除一切异常的因果。它已经嗅到了你们两个时空交叠的气息。'},
+    {who:'fox',name:'狐面行者',text:'年轻的旅人，它不会和你讲道理，也不会给你第二次机会。它要抹除的，是「你记得她」这件事本身。'},
+    {who:'nao',name:'直实',text:'抹除记忆……不！我已经找了她那么久，绝不能在这里被抹掉！瑠璃还在等我！'},
+    {who:'adult',name:'成年直实',text:'快——集齐最后的碎片，那是锚定这段因果的唯一凭证！只要三枚碎片合一，她的意识就能在因果层留下不可擦除的印记！'},
+    {who:'fox',name:'狐面行者',text:'跑吧，旅人。在猎时者完全降临之前，在「遗忘」追上你之前——找到那枚最后的碎片。'}
+  ],
+  /* 全碎片收集：真相描述 + 瑠璃感谢告别（6句） */
+  allFragmentsCollected: [
+    {who:'ruri',name:'一行瑠璃',text:'三枚碎片合一了……我散落的意识，终于重新拼成了一个完整的我。谢谢你，一直记得我。在那些没有你的时间里，是你的记忆撑住了我。'},
+    {who:'ruri',name:'一行瑠璃',text:'碎片里藏着真相：那场夏末，我并非意外消失，而是主动踏入了虚像层——因为我看见了即将崩塌的世界，想替你拦下它。'},
+    {who:'ruri',name:'一行瑠璃',text:'颠倒的世界，其实是我们共同做的一个长长的梦。梦醒时分，也就是重逢之时。但现在，我还不能完全回来。'},
+    {who:'nao',name:'直实',text:'瑠璃……你为了我，独自困在那层世界里这么久。我一定会找到把你完全带回来的方法，无论要重启多少次。'},
+    {who:'ruri',name:'一行瑠璃',text:'别哭呀。这只是一个序章的结尾。下次轮回，下个夏天，颠倒的天空之下，我会再等你一次。'},
+    {who:'adult',name:'成年直实',text:'序章到此结束。你已替因果层留下了不可擦除的印记——她不会被遗忘了。而真正的重启，才刚刚开始。'}
+  ],
+  /* 结局对话：感悟 + 告别承诺 + 忠告 + 谜语结尾 + 完整版预告（8句） */
+  endingDialogue: [
+    {who:'nao',name:'直实',text:'雨停了。鸭川的水面重新变得平静，倒映着久违的、未被颠倒的星空。原来这就是「世界正面」该有的样子。'},
+    {who:'nao',name:'直实',text:'这一路我读懂了涂鸦里的密语、灯笼的诫律、河底的呼喊……才明白，所谓颠倒世界，不过是另一个我、另一个她，在替我们承受我们看不见的重量。'},
+    {who:'ruri',name:'一行瑠璃',text:'我会在这里等你。在下一次轮回，在下一个夏天，在颠倒过来的天空之下。只要你还记得739，我们就能再相遇。'},
+    {who:'ruri',name:'一行瑠璃',text:'这是我对你的承诺——也是这个序章，留给未来的信物。别为我难过，这场重逢，已经足够温柔。'},
+    {who:'adult',name:'成年直实',text:'你已经走完了序章。这段记忆会被封存进因果层，但你不会真正忘记——你的心会替你记得。记住，真正的重启不在抹除过去，而在带着过去重新出发。'},
+    {who:'fox',name:'狐面行者',text:'鸟居的尽头还有很长的路要走，年轻的旅人。因果的河流还会再次倒流，届时，愿你仍记得今夜的星光，与那个在镜面之后等你的少女。'},
+    {who:'nao',name:'直实',text:'颠倒世界……无论要重启多少次，我一定会找到回去的方法，找到你。序章，就此落幕。'},
+    {who:'fox',name:'狐面行者',text:'（面具下的低语）序章之后，是「第一章」。那时，猎时者将不再只是影子——而完整的重启，需要的远不止三枚碎片……且听，下个夏天的风铃。'}
+  ]
+};
+
+let dialogueQueue = [], dialogueIndex = 0, dialogueTyping = false, dialogueEndCb = null;
+function showDialogue(key, onComplete){
+  const arr = Dialogues[key];
+  if(!arr) return;
+  dialogueQueue = arr; dialogueIndex = 0; dialogueEndCb = onComplete||null;
+  $('dialogue-box').classList.add('show');
+  // 对话进行时，降低左下角环境文字的存在感，避免视觉拥挤
+  $('scene-ambience').classList.add('dim');
+  typeLine();
+}
+function typeLine(){
+  const line = dialogueQueue[dialogueIndex];
+  if(!line){ hideDialogue(); return; }
+  // 设置头像与名字
+  const av = $('dialogue-avatar');
+  av.style.backgroundImage = `url('assets/char_${line.who}.jpg')`;
+  const nameEl = $('dialogue-name');
+  nameEl.textContent = line.name;
+  // 角色名字颜色区分：直实蓝/瑠璃粉/成年直实绿/狐面行者灰
+  nameEl.className = 'dialogue-name name-' + (line.who||'nao');
+  const txtEl = $('dialogue-text');
+  txtEl.innerHTML = '';
+  dialogueTyping = true;
+  let i=0;
+  const full = line.text;
+  function tick(){
+    if(!dialogueTyping) { txtEl.innerHTML = full + '<span class="cursor"></span>'; return; }
+    if(i<full.length){
+      txtEl.innerHTML = full.slice(0,i+1) + '<span class="cursor"></span>';
+      i++;
+      setTimeout(tick, 38);
+    } else {
+      dialogueTyping = false;
+    }
+  }
+  tick();
+}
+function advanceDialogue(){
+  if(dialogueTyping){
+    // 跳过打字
+    dialogueTyping = false;
+    const line = dialogueQueue[dialogueIndex];
+    $('dialogue-text').innerHTML = line.text + '<span class="cursor"></span>';
+    return;
+  }
+  dialogueIndex++;
+  if(dialogueIndex >= dialogueQueue.length){
+    hideDialogue();
+    if(dialogueEndCb){ const cb=dialogueEndCb; dialogueEndCb=null; cb(); }
+    // 对话结束后尝试触发结局（处理碎片收集顺序的边界情况）
+    tryTriggerEnding();
+  } else {
+    typeLine();
+  }
+}
+function hideDialogue(){
+  $('dialogue-box').classList.remove('show');
+  $('scene-ambience').classList.remove('dim');
+}
+$('dialogue-box').addEventListener('click', advanceDialogue);
+
+/* ============================================================
+   六、场景系统
+   ============================================================ */
+const SceneDefs = {
+  classroom: {
+    name:'北宇治高中教室',
+    bgNormal:"url('assets/bg_classroom.jpg')",
+    bgCorrupted:"url('assets/bg_classroom_corrupted.jpg')",
+    hotspots:[
+      {id:'diary',      x:'35%', y:'65%', label:'日记本'},
+      {id:'windchime',  x:'75%', y:'25%', label:'风铃'},
+      {id:'blackboard', x:'50%', y:'28%', label:'黑板数字'},
+      {id:'textbook',   x:'45%', y:'68%', label:'课本'},
+      {id:'sticky',     x:'58%', y:'72%', label:'便利贴'},
+      {id:'graffiti',   x:'22%', y:'75%', label:'涂鸦'}
+    ]
+  },
+  shrine: {
+    name:'伏见稻荷千本鸟居',
+    bgNormal:"url('assets/bg_shrine.jpg')",
+    bgCorrupted:"url('assets/bg_shrine_corrupted.jpg')",
+    hotspots:[
+      {id:'lanterns', x:'50%', y:'30%', label:'一排灯笼', special:'lanterns'},
+      {id:'tablet',   x:'28%', y:'55%', label:'石碑'},
+      {id:'painting', x:'70%', y:'50%', label:'瑠璃的画作'}
+    ]
+  },
+  river: {
+    name:'雨夜鸭川河畔',
+    bgNormal:"url('assets/bg_river.jpg')",
+    bgCorrupted:"url('assets/bg_river_corrupted.jpg')",
+    hotspots:[
+      {id:'water', x:'50%', y:'72%', label:'水面'},
+      {id:'frag1', x:'30%', y:'62%', label:'记忆碎片', special:'fragment'},
+      {id:'frag2', x:'58%', y:'78%', label:'记忆碎片', special:'fragment'},
+      {id:'frag3', x:'74%', y:'66%', label:'记忆碎片', special:'fragment'}
+    ]
+  }
+};
+
+function renderSceneHotspots(sceneId){
+  const def = SceneDefs[sceneId];
+  const sceneEl = $('scene-'+sceneId);
+  // 清空旧热点
+  let layer = sceneEl.querySelector('.hotspot-layer');
+  if(layer) layer.remove();
+  layer = document.createElement('div'); layer.className='hotspot-layer';
+  sceneEl.appendChild(layer);
+
+  if(sceneId==='classroom'){
+    const st = GameState.classroom;
+    const solvedMap = { graffiti:st.graffiti, sticky:st.sticky, blackboard:st.codeSolved };
+    def.hotspots.forEach(h=>{
+      const el = document.createElement('div');
+      el.className='hotspot'+(solvedMap[h.id]?' solved':'');
+      el.style.left=h.x; el.style.top=h.y;
+      el.innerHTML = `<div class="hotspot-ring"></div><div class="hotspot-dot"></div><div class="hotspot-label">${h.label}</div>`;
+      el.addEventListener('click',()=>onClassroomHotspot(h.id, el));
+      layer.appendChild(el);
+    });
+  } else if(sceneId==='shrine'){
+    const st = GameState.shrine;
+    // 灯笼组（5个横排）
+    const lanternWrap = document.createElement('div');
+    lanternWrap.style.cssText='position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);display:flex;gap:30px;';
+    for(let i=0;i<5;i++){
+      const l=document.createElement('div');
+      l.className='lantern'+(st.lanterns[i]?' lit':''); l.dataset.i=i;
+      l.innerHTML=`<div class="lantern-string"></div><div class="lantern-cap"></div><div class="lantern-body"></div>`;
+      l.addEventListener('click',()=>onLantern(i));
+      lanternWrap.appendChild(l);
+    }
+    layer.appendChild(lanternWrap);
+    // 石碑、画作
+    [{id:'tablet',x:'28%',y:'55%',label:'石碑',solved:st.tablet},{id:'painting',x:'70%',y:'50%',label:'瑠璃的画作',solved:st.painting}].forEach(h=>{
+      const el=document.createElement('div');
+      el.className='hotspot'+(h.solved?' solved':''); el.style.left=h.x; el.style.top=h.y;
+      el.innerHTML=`<div class="hotspot-ring"></div><div class="hotspot-dot"></div><div class="hotspot-label">${h.label}</div>`;
+      el.addEventListener('click',()=>onShrineHotspot(h.id, el));
+      layer.appendChild(el);
+    });
+  } else if(sceneId==='river'){
+    const st = GameState.river;
+    const fragSolved = { frag1:st.f1, frag2:st.f2, frag3:st.f3 };
+    def.hotspots.forEach(h=>{
+      const el=document.createElement('div');
+      el.className='hotspot'+(fragSolved[h.id]?' solved':''); el.style.left=h.x; el.style.top=h.y;
+      if(h.special==='fragment'){
+        el.dataset.frag = h.id;
+        el.innerHTML=`<div class="hotspot-ring"></div><div class="hotspot-dot"></div><div class="hotspot-label">${h.label}</div>`;
+        if(fragSolved[h.id]){
+          // 已收集：禁用点击，并改变颜色
+          el.style.pointerEvents='none';
+          el.querySelector('.hotspot-dot').style.background='radial-gradient(circle,rgba(120,255,170,0.9),rgba(60,200,120,0.4))';
+        } else {
+          el.addEventListener('click',(e)=>onFragment(h.id, el, e));
+        }
+      } else {
+        el.innerHTML=`<div class="hotspot-ring"></div><div class="hotspot-dot"></div><div class="hotspot-label">${h.label}</div>`;
+        el.addEventListener('click',()=>onWater(el));
+      }
+      layer.appendChild(el);
+    });
+  }
+  applyRealityToScene(sceneId);
+}
+
+function switchScene(sceneId){
+  if(!GameState.unlockedScenes.includes(sceneId)){
+    showToast('该场景尚未解锁');
+    return;
+  }
+  AudioSys.transition();
+  const veil = $('transition-veil');
+  veil.classList.add('show');
+  setTimeout(()=>{
+    GameState.scene = sceneId;
+    // 切换场景显示
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    $('scene-'+sceneId).classList.add('active');
+    // 渲染热点
+    renderSceneHotspots(sceneId);
+    // 更新顶部标签
+    document.querySelectorAll('.scene-tab').forEach(t=>t.classList.toggle('active', t.dataset.scene===sceneId));
+    // 雨
+    $('rain-canvas').classList.toggle('active', sceneId==='river');
+    veil.classList.remove('show');
+    // 引导与氛围：场景名称大字幕、环境文字、浮动提示、怠速检测
+    SceneGuide.onEnterScene(sceneId);
+    updateHint();
+    saveGame();
+    // 首次进入场景的登场对话
+    if(sceneId==='shrine' && !GameState.flags.shrineEntered){
+      GameState.flags.shrineEntered = true;
+      setTimeout(()=>showDialogue('shrineEnter'), 700);
+    } else if(sceneId==='river' && !GameState.flags.riverEntered){
+      GameState.flags.riverEntered = true;
+      setTimeout(()=>showDialogue('riverEnter'), 700);
+    }
+  },420);
+}
+
+/* ============================================================
+   七、虚实切换
+   ============================================================ */
+function toggleReality(){
+  if(!GameState.realityUnlocked){
+    showToast('虚实切换尚未解锁——先解开教室的谜题');
+    return;
+  }
+  AudioSys.click();
+  GameState.reality = (GameState.reality==='normal') ? 'corrupted':'normal';
+  applyRealityState();
+  // 风铃在崩坏态切换时播放杂音
+  if(GameState.reality==='corrupted') AudioSys.glitch();
+}
+function applyRealityState(){
+  const btn = $('reality-toggle');
+  btn.classList.toggle('corrupted', GameState.reality==='corrupted');
+  applyRealityToScene(GameState.scene);
+  // 更新场景色调遮罩
+  document.querySelectorAll('.scene').forEach(s=>{
+    s.classList.toggle('corrupted', GameState.reality==='corrupted' && s.classList.contains('active'));
+  });
+}
+function applyRealityToScene(sceneId){
+  const def = SceneDefs[sceneId];
+  const el = $('scene-'+sceneId);
+  if(GameState.reality==='corrupted'){
+    el.style.backgroundImage = def.bgCorrupted;
+    el.classList.add('corrupted');
+  } else {
+    el.style.backgroundImage = def.bgNormal;
+    el.classList.remove('corrupted');
+  }
+}
+
+/* ============================================================
+   八、线索与碎片系统
+   ============================================================ */
+function addClue(clue){
+  if(GameState.clues.some(c=>c.id===clue.id)) return;
+  GameState.clues.push(clue);
+  ParticleSys.burstStars(window.innerWidth/2, window.innerHeight*0.5, '#FFD700');
+  AudioSys.clue();
+  showToast('发现新线索：'+clue.title);
+  updateCluePanel();
+  saveGame();
+}
+function addFragment(fragment){
+  if(GameState.fragments.some(f=>f.id===fragment.id)) return;
+  fragment.collected = true;
+  GameState.fragments.push(fragment);
+  updateCluePanel();
+  updateFragBadge();
+  saveGame();
+}
+function updateFragBadge(){
+  const b = $('frag-badge');
+  const n = GameState.fragments.length;
+  b.textContent = n;
+  b.style.display = n>0 ? 'flex':'none';
+}
+function updateCluePanel(){
+  const body = $('panel-body');
+  const tab = document.querySelector('.panel-subtab.active').dataset.tab;
+  if(tab==='clue'){
+    if(GameState.clues.length===0){
+      body.innerHTML = '<div class="empty-hint">尚未发现任何线索。<br>探索场景、切换虚实，<br>留意那些「不自然」的细节。</div>';
+      return;
+    }
+    body.innerHTML = GameState.clues.map(c=>`
+      <div class="clue-card"><h4>${c.title}</h4><p>${c.text}</p></div>
+    `).join('');
+  } else {
+    const all = [
+      {id:'frag1',name:'夏末的约定',desc:'瑠璃关于颠倒天空的许愿。'},
+      {id:'frag2',name:'夹缝中的低语',desc:'被封存在两层世界之间的声音。'},
+      {id:'frag3',name:'未寄出的画',desc:'她画下的、即将崩塌的世界。'}
+    ];
+    body.innerHTML = all.map(f=>{
+      const got = GameState.fragments.some(x=>x.id===f.id);
+      return `<div class="fragment-card ${got?'collected':''}">
+        <div class="fragment-icon">${got?'✦':'?'}</div>
+        <div class="fragment-info"><h4>${got?f.name:'???'}</h4><p>${got?f.desc:'尚未收集的记忆碎片'}</p></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ============================================================
+   九、提示系统（3级，随场景动态变化）
+   ============================================================ */
+const Hints = {
+  // 教室：引导观察涂鸦、便利贴，再指向黑板密码
+  classroom:[
+    '这间教室有六个发光点可调查。先去点击课桌左下角的「涂鸦」和压在课本下的「便利贴」——它们看似无关，却都藏着同一组线索。涂鸦上的符号「εCL」并不是字母，它的形状别有玄机。',
+    '涂鸦「εCL」是左右颠倒的镜面文字。试着在脑海中把它像照镜子一样翻转过来：ε像3、C像7的镜像、L像反写的7——翻转后读作「739」。而便利贴正面就直白地写着「7-3-9」，两者互为印证。黑板中央那排可拨动的数字，正是用来输入这组密码的。',
+    '答案就是 739。点击中上方的「黑板数字」热点，在弹出的密码键盘上依次按下 7、3、9，再确认。密码正确后，虚实切换功能会解锁，成年直实也会登场。之后别忘了用左侧「虚实」按钮切到崩坏态，重新调查日记与课本，会发现隐藏的真相。'
+  ],
+  // 鸟居：解释灯笼谜题逻辑 + 石碑密码
+  shrine:[
+    '鸟居场景有三个可调查点：上方的灯笼组、左侧的石碑、右侧的画作。先看石碑——上面的刻字是左右颠倒的镜像文字，需在心中翻转才能读懂。狐面行者的诫律「奇者为正，偶者为虚」，正是解开灯笼谜题的关键。',
+    '「奇者为正，偶者为虚」意味着：第1、3、5盏（奇数位）灯笼应被点亮，第2、4盏（偶数位）应保持熄灭。依次点击1、3、5号灯笼使它们亮起，鸟居会震动让路。石碑密码则与教室完全相同——翻转后的镜像数字仍是 739。',
+    '完整解法：先点亮第1、3、5盏灯笼（让2、4盏熄灭）；再点击石碑，输入密码 739。两者都完成后，瑠璃的画作会被揭示，河畔场景随之解锁。若想看见画中隐藏的崩塌预言，记得切到崩坏态再点一次画作。'
+  ],
+  // 河畔：指导碎片收集与异常应对
+  river:[
+    '雨夜鸭川有四个发光点：中央的「水面」可点击查看，另有三枚散落的记忆碎片。建议先切到崩坏态点击「水面」，水底会浮现瑠璃的呼喊，确认她就在虚像层。然后逐一收集三枚碎片。',
+    '三枚碎片的位置：第一枚在左侧水面（约30%处），第二枚在右下靠近岸边（约58%处），第三枚在右上水中（约74%处）。注意：拾起第二枚碎片后会触发世界异常（画面震颤、乱码闪烁）——这是剧情一部分，不要惊慌，异常结束后继续收集第三枚即可。',
+    '收集顺序与结局触发：依次点击三枚碎片即可，全部集齐后会自动播放记忆对话、世界崩坏对话与结局。若对话或异常进行中无法继续操作，稍等其结束即可。集齐三枚碎片是触发序章结局的唯一条件，与是否调查水面无关。'
+  ]
+};
+function updateHint(){
+  GameState.hintLevel = 0;
+  $('hint-box').classList.remove('show');
+}
+function showHint(){
+  AudioSys.click();
+  const scene = GameState.scene;
+  const arr = Hints[scene]; // 直接取该场景的3级提示数组
+  if(!arr) return;
+  if(GameState.hintLevel < arr.length) GameState.hintLevel++;
+  const lv = GameState.hintLevel;
+  $('hint-lv').textContent = lv;
+  $('hint-text').textContent = arr[lv-1] || arr[arr.length-1];
+  $('hint-box').classList.add('show');
+}
+
+/* ============================================================
+   九-2、引导与氛围系统：浮动提示、场景名称大字幕、环境文字、怠速检测
+   ============================================================ */
+const SceneGuide = (() => {
+  // 各场景左下角环境文字
+  const ambience = {
+    classroom:'七月的阳光穿过窗户，粉笔灰在光柱中缓缓飘落。一切都太安静了——安静得像一张<span class="amb-accent">被精心布置的布景</span>。',
+    shrine:'朱红的鸟居层层叠叠，延伸进幽暗的深处。空气里有线香的余味，和某种说不清的、<span class="amb-accent">不属于这个时空的电流声</span>。',
+    river:'雨打在鸭川的水面上，每一圈涟漪都像是一个正在消散的梦。路灯把你的影子拉得很长，长得<span class="amb-accent">像是另一个人</span>。'
+  };
+  // 场景名称中英文
+  const nameZh = { classroom:'北宇治高中教室', shrine:'伏见稻荷千本鸟居', river:'雨夜鸭川河畔' };
+  const nameEn = { classroom:'CLASSROOM · KITA-UJI HIGH', shrine:'FUSHIMI INARI · TORII', river:'KAMOGAWA · RAINY NIGHT' };
+
+  let promptTimer=null, idleTimer=null;
+
+  // 浮动提示：进入场景显示，3秒后淡出
+  function showPrompt(){
+    const p = $('interact-prompt');
+    p.classList.add('show');
+    clearTimeout(promptTimer);
+    promptTimer = setTimeout(()=>p.classList.remove('show'), 3000);
+  }
+  // 场景名称大字幕（切换时淡入淡出）
+  function showSceneName(sceneId){
+    const t = $('scene-name-title');
+    $('scene-name-zh').textContent = nameZh[sceneId]||'';
+    $('scene-name-en').textContent = nameEn[sceneId]||'';
+    t.classList.remove('show');
+    void t.offsetWidth; // 触发重排，重置动画
+    t.classList.add('show');
+  }
+  // 设置左下角环境文字
+  function setAmbience(sceneId){
+    const a = $('scene-ambience');
+    a.classList.remove('show');
+    setTimeout(()=>{
+      a.innerHTML = ambience[sceneId]||'';
+      a.classList.add('show');
+    }, 300);
+  }
+  // 进入场景统一触发
+  function onEnterScene(sceneId){
+    showSceneName(sceneId);
+    setAmbience(sceneId);
+    showPrompt();
+    resetIdle();
+  }
+  // 怠速检测：30秒无任何点击则加速热点脉冲，提示玩家交互
+  function resetIdle(){
+    clearTimeout(idleTimer);
+    document.querySelectorAll('.hotspot-layer').forEach(l=>l.classList.remove('urgent'));
+    idleTimer = setTimeout(()=>{
+      document.querySelectorAll('.hotspot-layer').forEach(l=>l.classList.add('urgent'));
+    }, 30000);
+  }
+  return { onEnterScene, resetIdle, showPrompt };
+})();
+
+/* ============================================================
+   十、存档 / 读档
+   ============================================================ */
+const SAVE_KEY = 'reversed_world_save_v1';
+function saveGame(){
+  try{
+    const data = {
+      scene:GameState.scene, reality:GameState.reality, realityUnlocked:GameState.realityUnlocked,
+      clues:GameState.clues, fragments:GameState.fragments, flags:GameState.flags,
+      classroom:GameState.classroom, shrine:GameState.shrine, river:GameState.river,
+      unlockedScenes:GameState.unlockedScenes, started:GameState.started
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    Object.assign(GameState, data);
+    return true;
+  }catch(e){ return false; }
+}
+function hasSave(){
+  try{ return !!localStorage.getItem(SAVE_KEY); }catch(e){ return false; }
+}
+
+/* ============================================================
+   十一、场景1：教室交互逻辑
+   ============================================================ */
+function onClassroomHotspot(id, el){
+  AudioSys.click();
+  const corrupted = GameState.reality==='corrupted';
+  const st = GameState.classroom;
+
+  if(id==='graffiti'){
+    st.graffiti = true; el.classList.add('solved');
+    showItem('课桌涂鸦','GRAFFITI','εCL',
+      '课桌角落里，有人用指甲深深地刻下了一串潦草的符号：εCL。指甲划过木纹的痕迹已经发黑，像是刻了很久，也像是不止一个人在不同时间里刻过同一句话。乍看像是无意义的涂鸦，可字符的形状却隐隐透着某种秩序，仿佛写的人在用一种只有特定之人才能读懂的方式说话。当你把它像照镜子一样左右翻转，再凑近细看——那分明是三个数字：7、3、9。指尖触过刻痕时，木桌传来一阵不属于这个夏天的凉意。这世上没有巧合的暗号，只有尚未被读懂的呼唤；而能读懂它的人，注定要走进颠倒的世界。',
+      '镜面文字 · 翻转后即为密码', true);
+    return;
+  }
+  if(id==='sticky'){
+    st.sticky = true; el.classList.add('solved');
+    showItem('便利贴','STICKY NOTE','7-3-9',
+      '一张粉色的便利贴被压在课本底下，边角已经卷起、泛黄，像是在这里等了很久。上面用工整而娟秀的字迹写着三个数字：7-3-9，数字之间用短横相连，像某种坐标，又像某种无声的倒计时。便利贴散发着淡淡的、不属于这个教室的樱花香气。翻到背面，还有一行极小、几乎要被涂抹掉的字：「当你看到颠倒的字，就把它翻回来。」这显然是留给某个特定之人的提示——而那个特定之人，此刻正读着它。写下它的人，似乎早就预见了你会站在这里，犹豫着不知该如何读懂这个世界。',
+      '提示 · 与涂鸦暗号互为印证');
+    return;
+  }
+  if(id==='diary'){
+    st.diary = true;
+    const text = corrupted
+      ? '翻开日记，原本的字迹开始扭曲、重组，像受惊的蚁群在纸面上奔逃。在崩坏态下，墨迹仿佛活了过来，一行原本不存在的隐藏文字缓缓浮出纸面，渗着刺骨的淡蓝色冷光：「她在两层世界的夹缝里等待。739是钥匙，也是囚笼。」字句之间渗出的光忽明忽灭，像是从另一个时空拼命渗透进来的求救讯号。再往后翻，每一页的空白处都浮现出同一句反复书写的话——「醒来。醒来。醒来。」笔迹从工整逐渐崩坏成无法辨认的乱码。日记的主人，似乎早已察觉了这个世界并非只有一面，却无人可说。'
+      : '一本普通的校园日记，封面贴着课程表，边角磨得发毛。扉页用铅笔写着「7月某日，晴」，字迹工整得近乎刻板。内容尽是些平淡得发腻的日常：值日、社团、便利店的冰淇淋、放学后绕远路回家。可在某一页的角落，有一句被反复涂抹、又反复重写的话：「今天，我又看见了那只不存在的风铃在响。」字迹潦草，笔触用力到几乎划破纸面，像是写的人自己也不敢相信，却又无法否认。纸页之间夹着一片干枯的樱花花瓣，不知是哪一年的夏天留下的，红得发暗，像一滴凝固的旧时光。';
+    showItem('直实的日记','DIARY','日',
+      text, corrupted?'崩坏态 · 隐藏文字显现':'常态 · 平凡的日常记录');
+    if(corrupted) addClue({id:'clue_diary',title:'日记中的隐藏文字',text:'「她在两层世界的夹缝里等待。739是钥匙，也是囚笼。」——崩坏态下，日记揭示了对瑠璃处境的描述。'});
+    return;
+  }
+  if(id==='textbook'){
+    st.textbook = true;
+    const text = corrupted
+      ? '课本上的文字在崩坏态下全部坍缩成了0和1的二进制乱码，密密麻麻如蚁群在纸面蠕动，发出肉眼可见的细微噪点。若你凝神细看，会发现这些乱码并非随机——它们排列成某种有节奏的波形，与黑板数字739组合后的闪烁频率完全吻合，像是同一段心跳的两个回声。页脚处，一行乱码突然重组为人话：「别相信你看见的表层。」随即又碎裂成满屏雪花。这是数据层的语言，是世界以最原始、最赤裸的形式，在向你低语它藏不住的真相。'
+      : '一本翻得卷了边的国文课本，书脊已经开裂，夹着几张画满涂鸦的草稿纸。书页之间压着一片干枯的樱花花瓣，不知是哪一年的夏天留下的，触感脆得像一声叹息。某一页用铅笔重重圈出了一句诗：「颠倒的镜中，夏亦成冬。」旁边的空白处，有人用极小的字写下一行批注：「如果天空翻过来，会是什么颜色？我们看见的，真的是真的吗？」字迹熟悉得让人心悸——这是你自己的笔迹，可你完全不记得写过。';
+    showItem('课本','TEXTBOOK','本',
+      text, corrupted?'崩坏态 · 文字化为二进制乱码':'常态 · 藏着一片旧樱花');
+    if(corrupted) addClue({id:'clue_textbook',title:'课本的二进制波形',text:'崩坏态下，课本文字化为二进制，其排列波形与黑板闪烁频率一致——指向路灯/灯笼的闪烁规律。'});
+    return;
+  }
+  if(id==='windchime'){
+    st.windchime = true;
+    if(corrupted){
+      AudioSys.glitch();
+      showItem('风铃','WIND CHIME','風',
+        '你伸手触碰风铃，它却没有发出清脆的叮咚，而是吐出一阵刺耳的电子杂讯，像损坏的收音机在拼命搜寻一个不存在的频道。杂讯之中，隐约能听见一个女孩的呼喊，被切碎、重组、倒放，变成无法辨认的呢喃——「……回……来……」。玻璃壁上的夏蝉开始扭曲、溶解，化作一串流动的乱码顺着风铃绳向上攀爬。在崩坏态下，连声音都失去了它原本的形状，只剩下世界裂开时那道细而尖的、无人听见的尖叫。',
+        '崩坏态 · 发出电子杂音');
+    } else {
+      AudioSys.click();
+      showItem('风铃','WIND CHIME','風',
+        '窗边悬着一枚玻璃风铃，琉璃的壁上绘着一只小小的夏蝉，翅翼薄得透光。微风拂过，它便发出清澈的叮咚声，像一滴凉水落进夏日的午后，又像某个遥远记忆里回荡的尾音。这声音太过寻常、太过温柔，寻常得让人几乎忘了——这间教室里，其实根本没有装风铃。你抬头看去，窗棂上空空如也，连挂钩的痕迹都没有，可铃声却仍在耳畔回荡，一声接一声，像是在呼唤一个迟迟不肯回头的人。',
+        '常态 · 清脆的夏风铃声');
+    }
+    return;
+  }
+  if(id==='blackboard'){
+    st.blackboard = true;
+    showCode('黑板密码锁', 3, '黑板上写着一排可拨动的数字。涂鸦与便利贴都指向同一个三位数……', (val)=>{
+      if(val==='739'){
+        st.codeSolved = true;
+        el.classList.add('solved');
+        addClue({id:'clue_blackboard',title:'黑板密码：739',text:'涂鸦εCL翻转后是739，与便利贴一致。密码正确——黑板的数字开始以特定频率闪烁，对应着某种信号规律。'});
+        // 触发成年直实登场（首次）
+        if(!GameState.flags.adultAppeared){
+          GameState.flags.adultAppeared = true;
+          GameState.realityUnlocked = true;
+          $('reality-toggle').classList.remove('disabled');
+          showToast('虚实切换已解锁');
+          setTimeout(()=>showDialogue('adultFirstAppear',()=>{
+            // 标记教室首阶段完成
+          }), 600);
+        }
+        return true;
+      }
+      return false;
+    }, ()=>{
+      $('code-hint').textContent='密码错误。试着把涂鸦「εCL」像镜子一样翻转……';
+      // 首次输错触发直实的疑惑对话（classroomCodeWrong）
+      if(!GameState.flags.classroomCodeWrongShown){
+        GameState.flags.classroomCodeWrongShown = true;
+        setTimeout(()=>showDialogue('classroomCodeWrong'), 500);
+      }
+    });
+    return;
+  }
+}
+
+function checkClassroomComplete(){
+  const st = GameState.classroom;
+  if(!st.codeSolved || (!st.diary && !st.textbook) || GameState.flags.classroomComplete) return;
+  // 防重入：对话或弹窗显示中暂不触发，待关闭后再判定
+  if($('dialogue-box').classList.contains('show')) return;
+  if(document.querySelector('.modal-mask.show')) return;
+  GameState.flags.classroomComplete = true;
+  // 解锁神社
+  if(!GameState.unlockedScenes.includes('shrine')){
+    GameState.unlockedScenes.push('shrine');
+    document.querySelector('.scene-tab[data-scene="shrine"]').classList.remove('locked');
+  }
+  setTimeout(()=>showDialogue('classroomComplete',()=>{
+    showToast('新场景已解锁：伏见稻荷千本鸟居');
+  }), 500);
+}
+
+/* ============================================================
+   十二、场景2：神社交互逻辑
+   ============================================================ */
+function onLantern(i){
+  AudioSys.click();
+  GameState.shrine.lanterns[i] = !GameState.shrine.lanterns[i];
+  const els = document.querySelectorAll('.lantern');
+  els[i].classList.toggle('lit', GameState.shrine.lanterns[i]);
+  checkLanterns();
+}
+function checkLanterns(){
+  const l = GameState.shrine.lanterns;
+  // 奇数位置(0,2,4 即第1,3,5盏)亮，偶数位置(1,3)灭
+  const correct = l[0] && !l[1] && l[2] && !l[3] && l[4];
+  if(correct && !GameState.shrine.lanternSolved){
+    GameState.shrine.lanternSolved = true;
+    addClue({id:'clue_lantern',title:'鸟居灯笼之诫',text:'「奇者为正，偶者为虚」。点亮第1、3、5盏灯笼，鸟居让出了通往虚像层的路。'});
+    showToast('灯笼排列正确，鸟居微微震动……');
+  }
+}
+function onShrineHotspot(id, el){
+  AudioSys.click();
+  const corrupted = GameState.reality==='corrupted';
+  const st = GameState.shrine;
+
+  if(id==='tablet'){
+    st.tablet = true;
+    showCode('石碑密码', 3, '石碑上的刻字是左右颠倒的镜像。翻转之后，那串数字仍是你熟悉的……', (val)=>{
+      if(val==='739'){
+        st.codeSolved = true; el.classList.add('solved');
+        addClue({id:'clue_tablet',title:'石碑坐标：739',text:'石碑镜像文字翻转后为739——这是瑠璃在崩坏前亲手刻下的坐标，指向虚像层中她的位置。'});
+        if(!GameState.flags.shrineCodeDone){
+          GameState.flags.shrineCodeDone = true;
+          setTimeout(()=>showDialogue('shrineCodeCorrect',()=>{
+            // 解锁河畔
+            if(!GameState.unlockedScenes.includes('river')){
+              GameState.unlockedScenes.push('river');
+              document.querySelector('.scene-tab[data-scene="river"]').classList.remove('locked');
+              showToast('新场景已解锁：雨夜鸭川河畔');
+            }
+          }), 600);
+        }
+        return true;
+      }
+      return false;
+    }, ()=>{
+      $('code-hint').textContent='密码错误。镜像文字翻转后，与教室是同一个数字……';
+    });
+    return;
+  }
+  if(id==='painting'){
+    st.painting = true; el.classList.add('solved');
+    const text = corrupted
+      ? '在崩坏态下，画作的颜料开始流淌、重组，像伤口一样向外渗出。原本宁静的河畔风景被生生撕裂，露出底层冰冷的数据网格——那是一个正在崩塌的世界：天空倒悬坠向大地，千本鸟居扭曲成无尽的螺旋，鸭川的水逆向流向了天空。画面正中央，一个少女的轮廓正在一点点消散，她伸出手，指尖触向画框之外，仿佛在抓向某个再也触碰不到的人。她的嘴唇还在动，反复说着同一句无声的话：「来不及了。」这就是她早就预见、却无力阻止的未来。'
+      : '一幅未署名的水彩画，画的是黄昏时的鸭川。色调温暖而忧郁，河面上倒映着颠倒的天空，云在脚下，夕阳沉在水底。笔触细腻却带着某种急切，像是赶在什么之前匆匆画完。画框背面用铅笔写着一行小字：「如果有一天世界颠倒了，请记得来这里找我。」字迹稚嫩却坚定，像是在对一个早已约定好的人说话。画作散发着淡淡的、不属于这个时空的气息，你凑近时，仿佛能听见画里传来极轻极轻的、夏天的风声。';
+    showItem('瑠璃的画作','RURI\'S PAINTING','画',
+      text, corrupted?'崩坏态 · 揭示崩塌的世界':'常态 · 温暖而忧郁的鸭川');
+    if(corrupted) addClue({id:'clue_painting',title:'画中的崩塌预言',text:'崩坏态下，画作显现出瑠璃预见的世界崩塌图景——天空倒悬、鸟居螺旋、少女消散。她早已知道一切。'});
+    return;
+  }
+}
+
+/* ============================================================
+   十三、场景3：河畔交互逻辑（雨、碎片、异常、结局）
+   ============================================================ */
+const RainSys = (() => {
+  const canvas = $('rain-canvas');
+  const ctx = canvas.getContext('2d');
+  let drops=[], W=0,H=0, raf=null;
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  function init(){
+    drops=[];
+    for(let i=0;i<80;i++){
+      drops.push({x:Math.random()*W, y:Math.random()*H, len:14+Math.random()*22, speed:7+Math.random()*9, alpha:0.3+Math.random()*0.5});
+    }
+  }
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(160,210,255,0.6)';
+    ctx.lineWidth=1.2;
+    drops.forEach(d=>{
+      ctx.globalAlpha=d.alpha;
+      ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-2, d.y+d.len); ctx.stroke();
+      d.y+=d.speed; d.x-=0.4;
+      if(d.y>H){ d.y=-d.len; d.x=Math.random()*W; }
+    });
+    ctx.globalAlpha=1;
+    raf=requestAnimationFrame(loop);
+  }
+  function start(){ if(raf) return; init(); loop(); }
+  function stop(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
+  return {start,stop,resize};
+})();
+
+function onWater(el){
+  AudioSys.click();
+  GameState.river.water = true;
+  const corrupted = GameState.reality==='corrupted';
+  const text = corrupted
+    ? '你伸手触碰水面，倒影瞬间碎裂成无数发光的数据碎片，像一面镜子被锤成齑粉。在崩坏态下，河底浮现出一行行幽蓝的文字，像被打碎又重新拼贴的诗句：「我在这里」「你看得见吗」「颠倒的天空下」「我们还能重逢吗」。每一句都在水波中闪烁、扭曲、重组，又缓缓消散，像是有人在很远很远、几乎触不到的层里，用尽最后的气力，拼命想要把一句话传达到这里。你的指尖浸在水里，冷得像是触碰到了另一个人的眼泪。'
+    : '雨点打在水面上，泛起一圈圈涟漪，层层叠叠地推开，像无数个正在低语的小小嘴唇。你俯身看向河面，倒影里的天空似乎是颠倒的——云在脚下，星在头顶，连你自己的倒影也在与你做着相反的动作。水波之间，隐约有文字一闪而过，但转瞬即逝，伸手去抓只剩满掌冰凉的雨水。也许，只有当世界露出它的另一面、当雨声盖过所有杂讯时，这些藏在水面之下的字，才会真正显形，被人读懂。';
+  showItem('鸭川水面','RIVER SURFACE','水',
+    text, corrupted?'崩坏态 · 水底浮现碎裂的诗句':'常态 · 倒影中的颠倒天空');
+  if(corrupted) addClue({id:'clue_water',title:'水底的传达',text:'崩坏态下，河底浮现瑠璃的呼喊：「颠倒的天空下，我们还能重逢吗。」她在虚像层向现实层发送讯息。'});
+}
+
+function onFragment(fragId, el, e){
+  AudioSys.collect();
+  el.classList.add('solved');
+  // 收集粒子飞向图鉴
+  const rect = el.getBoundingClientRect();
+  ParticleSys.collectFly(rect.left+rect.width/2, rect.top+rect.height/2);
+  ParticleSys.burstStars(rect.left+rect.width/2, rect.top+rect.height/2, '#FFB7C5');
+
+  let frag, dialogueKey=null, afterCb=null;
+  if(fragId==='frag1'){
+    GameState.river.f1 = true;
+    frag = {id:'frag1',name:'夏末的约定',desc:'瑠璃关于颠倒天空的许愿，封存在第一枚碎片中。'};
+    addFragment(frag);
+    addClue({id:'clue_frag1',title:'记忆碎片·一',text:'「那天夏末，我说想看颠倒过来的天空……」——瑠璃的许愿，是这一切的起点。'});
+  } else if(fragId==='frag2'){
+    GameState.river.f2 = true;
+    frag = {id:'frag2',name:'夹缝中的低语',desc:'被封存在两层世界之间的声音碎片。'};
+    addFragment(frag);
+    addClue({id:'clue_frag2',title:'记忆碎片·二',text:'「我没有离开，只是去了一个你看不见的层。」——瑠璃被困于虚像层的真相。'});
+    // 第二枚触发世界异常
+    if(!GameState.river.glitchTriggered){
+      GameState.river.glitchTriggered = true;
+      dialogueKey='ruriMemory';
+      afterCb = ()=>{
+        triggerWorldGlitch(()=>{
+          showDialogue('worldGlitch');
+        });
+      };
+    }
+  } else if(fragId==='frag3'){
+    GameState.river.f3 = true;
+    frag = {id:'frag3',name:'未寄出的画',desc:'她画下的、即将崩塌的世界，与神社那幅画互为镜像。'};
+    addFragment(frag);
+    addClue({id:'clue_frag3',title:'记忆碎片·三',text:'「未寄出的画」——瑠璃画下的崩塌世界，与神社画作互为镜像，构成了完整的预言。'});
+  }
+
+  el.style.pointerEvents='none';
+  el.querySelector('.hotspot-dot').style.background='radial-gradient(circle,rgba(120,255,170,0.9),rgba(60,200,120,0.4))';
+
+  // 依次播放对话
+  if(dialogueKey){
+    showDialogue(dialogueKey, afterCb);
+  }
+
+  // 全部收集 → 尝试触发结局（若对话进行中则等待其结束后再判定）
+  tryTriggerEnding();
+}
+
+function tryTriggerEnding(){
+  if(GameState.river.ended) return;
+  if(!(GameState.river.f1 && GameState.river.f2 && GameState.river.f3)) return;
+  // 对话或弹窗进行中则等待，由 advanceDialogue 完成后再次判定
+  if($('dialogue-box').classList.contains('show')) return;
+  if(document.querySelector('.modal-mask.show')) return;
+  if($('glitch-overlay').classList.contains('active')) return;
+  GameState.river.ended = true;
+  setTimeout(()=>{
+    showDialogue('allFragmentsCollected', ()=>{
+      showDialogue('endingDialogue', ()=>{ triggerEnding(); });
+    });
+  }, 600);
+}
+
+function triggerWorldGlitch(onDone){
+  AudioSys.glitch();
+  $('glitch-overlay').classList.add('active');
+  $('glitch-lines').classList.add('active');
+  const gs = $('game-screen');
+  gs.classList.add('shake');
+  // 数据乱流文字
+  showToast('⚠ 世界异常：现实层与虚像层正在重叠');
+  setTimeout(()=>{
+    $('glitch-overlay').classList.remove('active');
+    $('glitch-lines').classList.remove('active');
+    gs.classList.remove('shake');
+    if(onDone) onDone();
+  }, 2200);
+}
+
+function triggerEnding(){
+  AudioSys.transition();
+  // 结局正文：完整叙事弧线，200字以上
+  const text = [
+    '雨，终于停了。鸭川的水面重新归于平静，倒映着久违的、未被颠倒的星空。河畔的风带着夏末最后的温度，缓缓吹散了空气中残留的数据杂讯，连那道横亘在两个时空之间的裂痕，也一点点地合拢、淡去。',
+    '瑠璃的声音在水面最后回荡了一次，然后沉入河底，化作一枚温柔的光点。她没有真正离开，只是回到了那个「你看不见的层」，在那里继续画着她永远画不完的夏天，等待下一次重逢。三枚碎片合一的那一刻，她终于能完整地说出那句迟到了整个夏天的——「谢谢你来找我」。',
+    '成年直实的虚影在你身旁渐渐淡去，化作一阵青色的光雾，融进夜色里。「你已经走完了序章。」他的声音像从很远的地方传来，「真正的重启，才刚刚开始——而那，将是另一个故事了。记住，重启从不是遗忘，而是带着所有发生过的事，重新出发。」',
+    '狐面行者立在鸟居的尽头，面具下的目光意味深长。他没有说再见，只留下一句谜语般的低语：「因果的河流还会再次倒流，年轻的旅人。届时，愿你仍记得今夜的星光，与那个在镜面之后等你的少女。」然后，他便随着最后一缕线香的余味，消失在层层叠叠的朱红之中。',
+    '你转身望向颠倒世界渐渐平息的裂痕。直实攥紧了拳头，指节发白。无论要重启多少次，无论世界会颠倒多少回，无论猎时者会如何追逐——他一定会找到把她完全带回来的方法，找到她。这不是执念，而是一个早已刻进因果层的、不可擦除的承诺。',
+    '夏夜的萤火在河面上明明灭灭，像无数个正在闪烁的、温柔的标点。739这串数字，会替你们记得这一切；而你们的心，会替彼此记得。序章，就此落幕。但故事，从未真正结束。'
+  ];
+  $('ending-text').innerHTML = text.map(p=>`<p>${p}</p>`).join('');
+  // 制作名单滚动
+  const credits = [
+    {role:'原案 · 编剧',name:'REVERSED WORLD STUDIO'},
+    {role:'美术 · 视觉',name:'颠倒世界美术组'},
+    {role:'程序 · 交互',name:'星轨回溯工程组'},
+    {role:'音乐 · 音效',name:'Web Audio Synth'},
+    {role:'特别鸣谢',name:'每一位记得瑠璃的旅人'},
+    {role:'',name:'—— 序章 · 完 ——'}
+  ];
+  $('ending-credits').innerHTML = credits.map(c=>`
+    <div class="credits-role">${c.role}</div><div class="credits-line">${c.name}</div><div class="credits-sep"></div>
+  `).join('');
+  // 完整版预告
+  $('ending-preview').innerHTML = `
+    <div class="ep-tag">COMING IN CHAPTER ONE</div>
+    <div class="ep-text">完整版预告 · 第一章「逆转的因果」<br>猎时者将不再只是影子，星轨回溯系统的真相即将浮现。<br>直实与瑠璃的重逢，需要的远不止三枚碎片——<br>下个夏天，风铃再次响起时，故事将继续。</div>`;
+  $('ending-screen').classList.add('show');
+  ParticleSys.setMode('title');
+  saveGame();
+}
+
+/* ============================================================
+   十四、开始界面与初始化
+   ============================================================ */
+function buildLore(){
+  const html = `
+    <div class="lore-section">
+      <h3>故事背景</h3>
+      <p>2045年的京都，表面仍是千年古都的模样：朱红的鸟居、夏末的鸭川、北宇治高中蝉鸣不止的午后。然而在这层日常之下，一座隐秘的科研机构早已运转多年——「星轨回溯研究所」。他们试图用一台名为「星轨回溯系统」的装置，将意识投射进时间的褶皱，回溯并修正那些「本不该发生」的因果。</p>
+      <p>那场夏末的意外，正是系统失控的开端。一个少女的意识在回溯中被撕碎，散落在四层时空的夹缝里；而一个少年，则在不知情中成了连接各层的锚点。自此，京都的每一个角落都开始出现细小的裂痕——不存在的风铃、颠倒的倒影、河底的呢喃。本作序章，便是这场失控的最初一段。</p>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>四层时空设定</h3>
+      <div class="lore-card"><h4>表层 · 现实层</h4><p>日常的京都，是所有人共同认知的「唯一真实」。阳光下的北宇治教室、朱红的千本鸟居、雨夜的鸭川，皆在此层。然而细微的裂痕已悄然蔓延：不存在的风铃在响，倒影里的天空是颠倒的。表层最稳定，却也最容易被蒙蔽——因为它呈现的，往往只是人们愿意相信的样子。</p></div>
+      <div class="lore-card"><h4>虚像层 · 镜面世界</h4><p>现实层的镜像。文字左右颠倒，色彩偏移，时间在此凝滞成永恒的黄昏。瑠璃的意识便被困于此，无法被现实层的人直接触及，只能通过画作、水面与杂讯传达讯息。虚像层并不危险，却令人窒息——它是一个看得见彼此、却永远触碰不到的层。</p></div>
+      <div class="lore-card"><h4>数据层 · 崩坏态</h4><p>当表层与虚像层重叠时显现的「世界背面」。一切以二进制与杂讯的形式剥落，时间紊乱，因果错位，连声音都会失去原本的形状。切换至崩坏态，便能看见隐藏在表象之下的真相——日记里的隐藏文字、课本上的二进制波形、画中崩塌的预言，皆在此层显形。但停留过久，意识也会被数据侵蚀。</p></div>
+      <div class="lore-card"><h4>因果层 · 根源</h4><p>所有时间线的交汇点，也是「星轨回溯系统」真正运作的层。「猎时者」栖息于此，负责抹除一切异常的因果，维持时空的秩序。它是重启的审判者，也是横亘在重逢之路上的最终阻碍。因果层没有时间，只有因果——在那里，「记住」本身，就是一种需要被守护的奇迹。</p></div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>人物介绍</h3>
+      <div class="char-card"><div class="char-avatar" style="background-image:url('assets/char_nao.jpg')"></div><div class="char-desc"><h4>直实</h4><p>北宇治高中二年级生，能感知世界裂痕的少年。表面平凡，内心却始终背负着「她没有真正离开」的执念。他既是连接四层时空的关键锚点，也是这段失控因果里唯一还记得瑠璃的人。为了寻回消失的瑠璃，他踏上了穿越虚实之谜的旅程。</p></div></div>
+      <div class="char-card"><div class="char-avatar" style="background-image:url('assets/char_ruri.jpg')"></div><div class="char-desc"><h4>一行瑠璃</h4><p>直实的青梅竹马，天才画师，眼睛能看见别人看不见的「层」。那个夏末在鸭川「消失」，意识被封存进虚像层。她的画作预言了世界的崩塌，她的呼唤藏在每一处杂讯之中。她并非被动被困——她是为了替直实拦下崩塌，才主动踏入了那层看不见的世界。</p></div></div>
+      <div class="char-card"><div class="char-avatar" style="background-image:url('assets/char_adult.jpg')"></div><div class="char-desc"><h4>成年直实</h4><p>十年后直实留下的虚影投影，以青色光雾的形态显现。他引导少年时的自己穿越裂痕，知晓一切因果的走向。因规则所限，他只能给出提示，无法代为抉择。他的存在本身，就是这段因果已被重启过无数次的证据。</p></div></div>
+      <div class="char-card"><div class="char-avatar" style="background-image:url('assets/char_fox.jpg')"></div><div class="char-desc"><h4>狐面行者</h4><p>因果层的守望者，始终戴着狐狸面具，亦正亦邪。他守护着千本鸟居通往虚像层的通道，以古老的诫律考验每一位试图跨越的旅人。他的话语总是半真半假的谜语，既是引路人，也是清算者——谁也无法确定，他究竟站在旅人这一边，还是猎时者那一边。</p></div></div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>核心机制</h3>
+      <ul class="mech-list">
+        <li><b>虚实切换：</b>在常态与崩坏态之间切换视角，同一场景会显现截然不同的线索与文字。崩坏态下，日记、课本、画作都会吐露隐藏的真相，水面也会浮现被封存的呼喊。这是读懂世界背面的钥匙，但切换并非毫无代价——每多看一层，现实就更不稳一分。</li>
+        <li><b>镜像解谜：</b>虚像层的文字左右颠倒，需在心中将其翻转才能读懂暗号。课桌涂鸦「εCL」翻转后即为「739」，是贯穿全篇的核心密码。镜面不仅是谜题的手法，更是这个世界最本质的隐喻——你所见的，未必是它的本来面目。</li>
+        <li><b>碎片收集：</b>在河畔场景收集散落的记忆碎片。每枚碎片都封存着瑠璃的一段意识，也封存着这个世界的一段真相。集齐后将触发世界异常与序章结局——三枚碎片合一，方能在因果层留下不可擦除的印记。</li>
+        <li><b>怠速引导：</b>若你长时间未交互，热点的脉冲会自动加速，提示你还有未调查的角落。屏幕左下角的环境文字，也会随场景流转，悄悄补充氛围与伏笔。</li>
+      </ul>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>主题内核</h3>
+      <p><b>记忆的真伪：</b>当一段记忆可以被因果层反复擦写，我们该如何判断它是否真实？序章给出的答案是——真正重要的，从来不是记忆是否「准确」，而是是否有人愿意替你记得。直实之所以是锚点，正因为他「记得」这件本该被抹除的事。</p>
+      <p><b>救赎的本质：</b>瑠璃主动踏入虚像层，是为了替直实拦下崩塌；直实穿越虚实，是为了把瑠璃带回来。救赎从来不是单方向的拯救，而是两个人在不同层里，朝彼此伸出手。哪怕这一次只能换来一句告别，那也是不可擦除的重逢。</p>
+      <p><b>颠倒与重启：</b>「颠倒」既是世界的物理状态，也是视角的隐喻：换一面看，才会看见被遮蔽的真相。「重启」则不是抹除过去重来，而是带着所有发生过的事，重新出发——这才是序章真正想交给你的，通往第一章的钥匙。</p>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>核心密码 · 739</h3>
+      <p>739 不是随机的数字。它是瑠璃在崩坏前亲手刻下的坐标，是连接现实层与虚像层的钥匙，也是囚禁她的囚笼。涂鸦暗号、便利贴、黑板锁、石碑镜像——处处都指向它。当你读懂这个数字，便读懂了整个颠倒世界的入口。</p>
+    </div>`;
+  $('lore-body').innerHTML = html;
+}
+
+function buildControls(){
+  const html = `
+    <div class="lore-section">
+      <h3>基础操作</h3>
+      <ul class="mech-list">
+        <li><b>场景切换：</b>点击顶部导航栏的「教室 / 鸟居 / 河畔」标签，在不同场景间移动。新场景需解锁后才能进入。每次切换时，屏幕中央会浮现场景名称大字幕，左下角会出现该场景的环境文字。</li>
+        <li><b>调查物品：</b>场景中带有发光圆点的位置为可交互点，圆点下方有始终可见的物品名称标签，点击即可调查，弹出物品详情。若你长时间未操作，热点的脉冲会自动加速，提示你还有未调查的角落。</li>
+        <li><b>虚实切换：</b>点击屏幕左侧的圆形「虚实」按钮，在常态与崩坏态之间切换。崩坏态下，世界会显现隐藏的线索与文字。该功能需在教室解开谜题后解锁。</li>
+        <li><b>输入密码：</b>点击黑板、石碑等需要密码的物品时，会弹出数字键盘。依次点击数字输入，⌫ 为删除，清 为清空。输错时会有摇晃反馈，首次输错还会触发角色的疑惑对话。</li>
+        <li><b>推进对话：</b>对话框出现时，点击对话框任意位置可逐句推进；打字过程中点击可跳过当前打字效果。对话角色名字会以不同颜色区分（直实蓝、瑠璃粉、成年直实绿、狐面行者灰）。</li>
+      </ul>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>界面功能</h3>
+      <ul class="mech-list">
+        <li><b>线索面板：</b>点击右上角「线索」按钮打开右侧抽屉，查看已发现的线索与记忆碎片图鉴。可在「线索 / 碎片」两个标签间切换。</li>
+        <li><b>提示系统：</b>点击右下角金色「提示」按钮，分 3 级逐步给出当前场景的解谜提示。提示内容会随场景动态变化，从含蓄暗示到直接答案。</li>
+        <li><b>存档 / 读档：</b>点击「存档」按钮手动保存进度（也会在切换场景、发现线索时自动保存）。在标题界面点击「继续游戏」可读取存档。</li>
+        <li><b>返回标题：</b>点击「返回」按钮回到开始界面，进度会自动保存。</li>
+      </ul>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="lore-section">
+      <h3>通关流程</h3>
+      <ul class="mech-list">
+        <li><b>第一章 · 教室：</b>调查涂鸦「εCL」与便利贴「7-3-9」，在黑板输入密码 739，解锁虚实切换并触发成年直实登场。再切换至崩坏态调查日记、课本，发现隐藏线索。</li>
+        <li><b>第二章 · 鸟居：</b>点亮第 1、3、5 盏灯笼（奇者为正）；调查石碑输入密码 739，揭示瑠璃的画作，解锁河畔。</li>
+        <li><b>第三章 · 河畔：</b>在崩坏态下点击水面发现隐藏文字；逐一收集 3 枚记忆碎片。第二枚会引发世界异常，全部集齐触发序章结局。</li>
+      </ul>
+    </div>`;
+  $('controls-body').innerHTML = html;
+}
+
+function startGame(){
+  AudioSys.ensure();
+  AudioSys.transition();
+  GameState.reset();
+  GameState.started = true;
+  ParticleSys.setMode('game');
+  $('title-screen').classList.add('hidden');
+  setTimeout(()=>{
+    $('game-screen').classList.add('active');
+    renderSceneHotspots('classroom');
+    SceneGuide.onEnterScene('classroom'); // 首章引导：场景名/环境文字/提示
+    updateCluePanel();
+    updateFragBadge();
+    updateHint();
+    showToast('第一章 · 北宇治高中教室');
+    saveGame();
+  }, 800);
+}
+
+function continueGame(){
+  if(!hasSave()){ showToast('没有可读取的存档'); return; }
+  AudioSys.ensure();
+  loadGame();
+  AudioSys.transition();
+  ParticleSys.setMode('game');
+  $('title-screen').classList.add('hidden');
+  setTimeout(()=>{
+    $('game-screen').classList.add('active');
+    // 恢复 UI
+    document.querySelectorAll('.scene-tab').forEach(t=>{
+      t.classList.remove('locked');
+      if(!GameState.unlockedScenes.includes(t.dataset.scene)) t.classList.add('locked');
+    });
+    $('reality-toggle').classList.toggle('disabled', !GameState.realityUnlocked);
+    switchScene(GameState.scene);
+    updateCluePanel();
+    updateFragBadge();
+    showToast('已读取存档');
+  }, 800);
+}
+
+/* ============================================================
+   十五、事件绑定与启动
+   ============================================================ */
+function bindEvents(){
+  // 标题按钮
+  $('btn-start').addEventListener('click', ()=>{ AudioSys.click(); startGame(); });
+  $('btn-continue').addEventListener('click', ()=>{ AudioSys.click(); continueGame(); });
+  $('btn-lore').addEventListener('click', ()=>{ AudioSys.click(); buildLore(); openModal('lore-modal'); });
+  $('btn-controls').addEventListener('click', ()=>{ AudioSys.click(); buildControls(); openModal('controls-modal'); });
+
+  // 按钮光晕跟随鼠标
+  document.querySelectorAll('.tbtn').forEach(b=>{
+    b.addEventListener('mousemove',e=>{
+      const r=b.getBoundingClientRect();
+      b.style.setProperty('--mx',(e.clientX-r.left)+'px');
+      b.style.setProperty('--my',(e.clientY-r.top)+'px');
+    });
+  });
+
+  // 顶部导航
+  document.querySelectorAll('.scene-tab').forEach(t=>{
+    t.addEventListener('click',()=>{ if(t.classList.contains('locked')){ showToast('该场景尚未解锁'); return;} AudioSys.click(); switchScene(t.dataset.scene); });
+  });
+  $('nav-clue').addEventListener('click',()=>{ AudioSys.click(); $('clue-panel').classList.add('open'); updateCluePanel(); });
+  $('nav-frag').addEventListener('click',()=>{ AudioSys.click(); $('clue-panel').classList.add('open'); document.querySelector('.panel-subtab[data-tab="frag"]').click(); });
+  $('nav-save').addEventListener('click',()=>{ AudioSys.click(); saveGame(); showSaveTag(); });
+  $('nav-menu').addEventListener('click',()=>{ AudioSys.click(); saveGame(); $('game-screen').classList.remove('active'); setTimeout(()=>{ $('title-screen').classList.remove('hidden'); ParticleSys.setMode('title'); },300); });
+
+  $('panel-close').addEventListener('click',()=>{ AudioSys.click(); $('clue-panel').classList.remove('open'); });
+  document.querySelectorAll('.panel-subtab').forEach(s=>{
+    s.addEventListener('click',()=>{ AudioSys.click(); document.querySelectorAll('.panel-subtab').forEach(x=>x.classList.remove('active')); s.classList.add('active'); updateCluePanel(); });
+  });
+
+  // 虚实切换
+  $('reality-toggle').addEventListener('click', toggleReality);
+
+  // 提示
+  $('hint-btn').addEventListener('click', showHint);
+
+  // 结局重启
+  $('ending-restart').addEventListener('click',()=>{ AudioSys.click(); $('ending-screen').classList.remove('show'); setTimeout(()=>{ GameState.reset(); location.reload(); }, 600); });
+
+  // 暴露教室完成检测：在每次热点交互后检查；同时重置怠速计时
+  document.addEventListener('click',()=>{ SceneGuide.resetIdle(); setTimeout(checkClassroomComplete, 200); });
+
+  // 首次用户交互后激活音频上下文
+  document.body.addEventListener('pointerdown', ()=>AudioSys.ensure(), {once:true});
+}
+
+// 启动
+window.addEventListener('DOMContentLoaded', ()=>{
+  ParticleSys.setMode('title');
+  buildLore();
+  buildControls();
+  bindEvents();
+  RainSys.start(); // 预启动雨循环（画布默认透明）
+});
+
+// 监听崩坏态下进入河畔自动开启雨（已在 switchScene 处理）
+</script>
+</body>
+</html>
